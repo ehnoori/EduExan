@@ -1,13 +1,10 @@
 import 'dart:io';
-
-import 'package:excel/excel.dart' hide Border;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../database/isar_service.dart';
 import '../models/class_model.dart';
-import '../models/evaluation_model.dart';
 import 'evaluation_screen.dart';
 // ✅ این ایمپورت را حتماً اضافه کنید
 import '../services/excel_export_service.dart';
@@ -293,15 +290,16 @@ class _ClassListScreenState extends State<ClassListScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'فایل Excel با موفقیت در مسیر ${file.path} ذخیره شد.',
-            textDirection: TextDirection.rtl,
-            style: GoogleFonts.vazirmatn(),
-          ),
-          duration: const Duration(seconds: 3),
-        ),
+     ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text(
+      'فایل اکسل با موفقیت ذخیره شد.',
+      textDirection: TextDirection.rtl,
+      style: GoogleFonts.vazirmatn(),
+    ),
+    duration: const Duration(seconds: 2),
+  ),
+
       );
     } catch (e) {
       debugPrint('Excel export error: $e');

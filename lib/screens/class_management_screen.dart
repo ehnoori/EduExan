@@ -349,7 +349,7 @@ class _ClassManagementScreenState
         Expanded(
           child: _textField(
             controller: startTimeController,
-            hintText: 'شروع (مثلاً 2:30)',
+            hintText: 'شروع (2:30)',
             icon: Icons.access_time_rounded,
             keyboardType: TextInputType.datetime, // کیبورد دارای دو نقطه
             inputFormatters: timeFormatter,
@@ -359,7 +359,7 @@ class _ClassManagementScreenState
         Expanded(
           child: _textField(
             controller: endTimeController,
-            hintText: 'ختم (مثلاً 4:30)',
+            hintText: 'ختم (4:30)',
             icon: Icons.access_time_rounded,
             keyboardType: TextInputType.datetime, // کیبورد دارای دو نقطه
             inputFormatters: timeFormatter,
@@ -582,7 +582,7 @@ class _ClassManagementScreenState
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      textDirection: TextDirection.rtl,
+                      textDirection: TextDirection.ltr,
                       children: [
                         Text(
                           isSaving

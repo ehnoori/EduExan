@@ -478,7 +478,7 @@ class _ExcelFilesScreenState extends State<ExcelFilesScreen> {
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+      padding: const EdgeInsets.fromLTRB(8, 10, 8, 30),
       children: [
         // ======================================================
         // HEADER
@@ -506,17 +506,17 @@ class _ExcelFilesScreenState extends State<ExcelFilesScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _openExcelFile(file),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(18),
         child: Ink(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: excelGreen.withOpacity(0.15)),
+            border: Border.all(color: excelGreen.withValues(alpha: 0.15)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.035),
+                color: Colors.black.withValues(alpha: 0.035),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

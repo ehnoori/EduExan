@@ -198,9 +198,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                     child: Align(
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 28),
+                   
                         child: Text(
                           'شروع کنید',
                           textDirection: TextDirection.rtl,
@@ -209,7 +207,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                   ),
-                ),
+                
               ),
 
               const SizedBox(height: 30),

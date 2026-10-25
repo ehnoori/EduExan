@@ -64,10 +64,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final double screenHeight = mediaQuery.size.height;
 
     // اندازه‌ها متناسب با عرض و ارتفاع صفحه
-    final double horizontalPadding = (screenWidth * 0.05).clamp(12.0, 28.0);
+    final double horizontalPadding = (screenWidth * 0.025).clamp(8.0, 14.0);
 
-    final double sectionSpacing = (screenHeight * 0.018).clamp(10.0, 20.0);
-
+    //final double sectionSpacing = (screenHeight * 0.018).clamp(10.0, 20.0);
+final double sectionSpacing = 8.0;
     final double titleFontSize = (screenWidth * 0.05).clamp(18.0, 24.0);
 
     return Directionality(
