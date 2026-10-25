@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../database/isar_service.dart';
+import '../folder_questions/questions.dart';
 import '../models/class_model.dart';
 import '../models/evaluation_model.dart';
 
@@ -23,75 +24,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
   static const Color backgroundColor = Color(0xFFF0F6FF);
   static const Color primaryColor = Color(0xFF6C5CE7);
 
-  final List<Map<String, dynamic>> questions = [
-    {
-      'question': 'مقدار تحقیق روزانه شما در امور فناوری و اطلاعات چقدر است؟',
-      'type': 'choice',
-      'options': ['یک ساعت', 'دو ساعت', 'سه ساعت', 'چهار ساعت'],
-    },
-    {
-      'question': 'به صورت هفته وار، با چند برنامه کمپیوتری سروکار دارید؟',
-      'type': 'number',
-      'options': <String>[],
-    },
-    {
-      'question': 'به طور اوسط روزانه چند برنامه‌ی ICDL را به کار میبرید؟',
-      'type': 'choice',
-      'options': ['1 برنامه', '2 برنامه', '3 برنامه', '4 برنامه', '5 برنامه'],
-    },
-    {
-      'question': 'آیا امروز از کمپیوتر استفاده نموده اید؟',
-      'type': 'choice',
-      'options': ['بلی', 'خیر'],
-    },
-    {
-      'question': 'چند روز در هفته را به بازی‌های کمپیوتری سپری میکنید؟',
-      'type': 'choice',
-      'options': ['1 روز', '2 روز', '3 روز و یا بیشتر'],
-    },
-    {
-      'question': 'در هر هفته چند شب اخبار مربوط به تکنالوژی را دنبال میکنید؟',
-      'type': 'choice',
-      'options': ['1 شب', '2 شب', '3 شب', '4 و یا بیشتر'],
-    },
-    {
-      'question': 'آیا در مقابل ویروس‌های کمپیوتری کدام اقدامی انجام می‌دهید برای حفظ اطلاعات خود؟',
-      'type': 'choice',
-      'options': ['بلی', 'خیر', 'گاهی (کم)'],
-    },
-    {
-      'question': 'چند صفحه در هفته از مضامین تخصصی خود مطالعه دارید؟',
-      'type': 'number',
-      'options': <String>[],
-    },
-    {
-      'question':
-          'آیا تقسیم اوقات منظم برای مدیریت زمان و برنامه‌های درسی خود دارید؟',
-      'type': 'choice',
-      'options': ['بلی', 'خیر'],
-    },
-    {
-      'question': 'آیا به صورت تیمی با صنفی‌هایتان پروژه‌ای را کار کرده‌اید؟',
-      'type': 'project',
-      'options': ['بلی', 'خیر'],
-    },
-    {
-      'question':
-          'آیا به صورت منظم ویندوز و برنامه‌های خود را بروزرسانی میکنید؟',
-      'type': 'choice',
-      'options': ['بلی', 'خیر', 'اغلب (کم)'],
-    },
-    {
-      'question': 'کدام مهارت از مهارت‌های زیر را برای پیشرفت در رشته خود را فرا میگیرید؟',
-      'type': 'choice',
-      'options': ['کمپیوتری', 'هک و امنیت', 'وب سایت', 'موبایل آپ'],
-    },
-    {
-      'question': 'نظر یا پیشنهادی که به بهتر شدن پوهنحی بیانجامد بنویسید.',
-      'type': 'text',
-      'options': <String>[],
-    },
-  ];
+  
 
   int currentQuestion = 0;
   late List<String?> answers;
