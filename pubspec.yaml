@@ -1,10 +1,7 @@
-name: EduExam
 
+name: eduexam
 description: "Class Evaluation App"
-
-
 publish_to: 'none'
-
 version: 3.0.0+5
 
 environment:
@@ -25,7 +22,6 @@ dependencies:
   share_plus: ^13.3.0
   file_picker: ^13.1.0
   syncfusion_flutter_pdf: ^33.2.13
-  
 
 dev_dependencies:
   flutter_test:

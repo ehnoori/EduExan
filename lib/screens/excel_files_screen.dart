@@ -443,6 +443,7 @@ class _ExcelFilesScreenState extends State<ExcelFilesScreen> {
             icon: const Icon(
               Icons.arrow_back_ios_new_rounded,
               color: primaryTextColor,
+              size: 20,
             ),
           ),
           title: Text(

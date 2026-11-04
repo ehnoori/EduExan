@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
@@ -290,16 +291,15 @@ class _ClassListScreenState extends State<ClassListScreen> {
 
       if (!mounted) return;
 
-     ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(
-    content: Text(
-      'فایل اکسل با موفقیت ذخیره شد.',
-      textDirection: TextDirection.rtl,
-      style: GoogleFonts.vazirmatn(),
-    ),
-    duration: const Duration(seconds: 2),
-  ),
-
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'فایل اکسل با موفقیت ذخیره شد.',
+            textDirection: TextDirection.rtl,
+            style: GoogleFonts.vazirmatn(),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
       );
     } catch (e) {
       debugPrint('Excel export error: $e');
@@ -568,6 +568,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
         backgroundColor: const Color(0xFFF3F7FC),
         elevation: 0,
         centerTitle: true,
+
         title: Text(
           'لیست صنوف',
           style: GoogleFonts.vazirmatn(
@@ -576,20 +577,24 @@ class _ClassListScreenState extends State<ClassListScreen> {
             color: const Color(0xFF26364D),
           ),
         ),
+
+        // آیکون سه‌نقطه در سمت چپ
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 20,
-            color: Color(0xFF26364D),
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF26364D)),
+          onPressed: _showDeleteSheet,
         ),
+
+        // دکمه برگشت در سمت راست
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF26364D)),
-            onPressed: _showDeleteSheet,
+            icon: const Icon(
+            Icons.arrow_forward_ios_rounded,
+              size: 20,
+              color: Color(0xFF26364D),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
         ],
       ),

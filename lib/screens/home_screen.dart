@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'import_questions_screen.dart';
 import 'class_list_screen.dart';
 import 'class_management_screen.dart';
 import 'excel_files_screen.dart';
@@ -13,7 +14,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const Color backgroundColor = Color(0xFFF4F7FC);
+  static const Color backgroundColor =
+      Color.fromARGB(255, 241, 243, 243);
+
   static const Color primaryTextColor = Color(0xFF172B5B);
   static const Color secondaryTextColor = Color(0xFF68758A);
 
@@ -21,12 +24,15 @@ class _HomeScreenState extends State<HomeScreen> {
   static const Color lightBlue = Color(0xFF42A5F5);
   static const Color purple = Color(0xFF6A3CA3);
   static const Color excelGreen = Color(0xFF2E9B57);
+  static const Color questionsOrange = Color(0xFFE67E22);
 
   // باز کردن صفحه ایجاد صنف
   Future<void> openClassManagement() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const ClassManagementScreen()),
+      MaterialPageRoute(
+        builder: (_) => const ClassManagementScreen(),
+      ),
     );
 
     if (!mounted) return;
@@ -37,7 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> openClassList() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const ClassListScreen()),
+      MaterialPageRoute(
+        builder: (_) => const ClassListScreen(),
+      ),
     );
 
     if (!mounted) return;
@@ -48,27 +56,41 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> openExcelFiles() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const ExcelFilesScreen()),
+      MaterialPageRoute(
+        builder: (_) => const ExcelFilesScreen(),
+      ),
     );
 
     if (!mounted) return;
     setState(() {});
   }
+// باز کردن صفحه وارد کردن سوالات
+Future<void> openQuestions() async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const ImportQuestionsScreen(),
+    ),
+  );
+
+  if (!mounted) return;
+  setState(() {});
+}
 
   @override
   Widget build(BuildContext context) {
-    // اندازه صفحه با MediaQuery
     final mediaQuery = MediaQuery.of(context);
 
     final double screenWidth = mediaQuery.size.width;
     final double screenHeight = mediaQuery.size.height;
 
-    // اندازه‌ها متناسب با عرض و ارتفاع صفحه
-    final double horizontalPadding = (screenWidth * 0.025).clamp(8.0, 14.0);
+    final double horizontalPadding =
+        (screenWidth * 0.025).clamp(8.0, 14.0);
 
-    //final double sectionSpacing = (screenHeight * 0.018).clamp(10.0, 20.0);
-final double sectionSpacing = 8.0;
-    final double titleFontSize = (screenWidth * 0.05).clamp(18.0, 24.0);
+    final double sectionSpacing = 8.0;
+
+    final double titleFontSize =
+        (screenWidth * 0.05).clamp(18.0, 24.0);
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -96,8 +118,9 @@ final double sectionSpacing = 8.0;
               horizontalPadding,
               screenHeight * 0.012,
               horizontalPadding,
-              screenHeight * 0.035,
+              screenHeight * 0.03,
             ),
+
             child: Column(
               children: [
                 _buildHero(
@@ -107,6 +130,7 @@ final double sectionSpacing = 8.0;
 
                 SizedBox(height: sectionSpacing),
 
+                // ایجاد صنف جدید
                 _buildCreateClassButton(
                   screenWidth: screenWidth,
                   screenHeight: screenHeight,
@@ -114,6 +138,7 @@ final double sectionSpacing = 8.0;
 
                 SizedBox(height: sectionSpacing),
 
+                // لیست صنوف
                 _buildClassListCard(
                   screenWidth: screenWidth,
                   screenHeight: screenHeight,
@@ -121,7 +146,16 @@ final double sectionSpacing = 8.0;
 
                 SizedBox(height: sectionSpacing),
 
+                // نتایج
                 _buildExcelFilesCard(
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                ),
+
+                SizedBox(height: sectionSpacing),
+
+                // وارد کردن سوالات
+                _buildQuestionsCard(
                   screenWidth: screenWidth,
                   screenHeight: screenHeight,
                 ),
@@ -138,13 +172,17 @@ final double sectionSpacing = 8.0;
     required double screenWidth,
     required double screenHeight,
   }) {
-    final double padding = (screenWidth * 0.055).clamp(16.0, 28.0);
+    final double padding =
+        (screenWidth * 0.055).clamp(16.0, 28.0);
 
-    final double iconSize = (screenWidth * 0.14).clamp(42.0, 68.0);
+    final double iconSize =
+        (screenWidth * 0.14).clamp(42.0, 68.0);
 
-    final double headingSize = (screenWidth * 0.052).clamp(19.0, 25.0);
+    final double headingSize =
+        (screenWidth * 0.052).clamp(19.0, 25.0);
 
-    final double descriptionSize = (screenWidth * 0.032).clamp(12.0, 16.0);
+    final double descriptionSize =
+        (screenWidth * 0.032).clamp(12.0, 16.0);
 
     return Container(
       width: double.infinity,
@@ -157,6 +195,7 @@ final double sectionSpacing = 8.0;
         ),
         borderRadius: BorderRadius.circular(22),
       ),
+
       child: Row(
         children: [
           Expanded(
@@ -190,7 +229,11 @@ final double sectionSpacing = 8.0;
 
           SizedBox(width: screenWidth * 0.025),
 
-          Icon(Icons.school_rounded, size: iconSize, color: Colors.white),
+          Icon(
+            Icons.school_rounded,
+            size: iconSize,
+            color: Colors.white,
+          ),
         ],
       ),
     );
@@ -217,7 +260,7 @@ final double sectionSpacing = 8.0;
     required double screenHeight,
   }) {
     return _buildMenuCard(
-      title: 'لیست صنوف ',
+      title: 'لیست صنوف',
       icon: Icons.groups_rounded,
       iconColor: purple,
       screenWidth: screenWidth,
@@ -241,6 +284,21 @@ final double sectionSpacing = 8.0;
     );
   }
 
+  // وارد کردن سوالات
+  Widget _buildQuestionsCard({
+    required double screenWidth,
+    required double screenHeight,
+  }) {
+    return _buildMenuCard(
+      title: 'وارد کردن سوالات',
+      icon: Icons.quiz_rounded,
+      iconColor: questionsOrange,
+      screenWidth: screenWidth,
+      screenHeight: screenHeight,
+      onTap: openQuestions,
+    );
+  }
+
   // کارت عمومی
   Widget _buildMenuCard({
     required String title,
@@ -250,29 +308,40 @@ final double sectionSpacing = 8.0;
     required double screenHeight,
     required VoidCallback onTap,
   }) {
-    final double iconBoxSize = (screenWidth * 0.125).clamp(44.0, 54.0);
+    final double iconBoxSize =
+        (screenWidth * 0.125).clamp(44.0, 54.0);
 
-    final double iconSize = (screenWidth * 0.07).clamp(23.0, 30.0);
+    final double iconSize =
+        (screenWidth * 0.07).clamp(23.0, 30.0);
 
-    final double cardPadding = (screenWidth * 0.045).clamp(14.0, 22.0);
+    final double cardPadding =
+        (screenWidth * 0.045).clamp(14.0, 22.0);
 
-    final double titleSize = (screenWidth * 0.038).clamp(13.0, 17.0);
+    final double titleSize =
+        (screenWidth * 0.038).clamp(13.0, 17.0);
 
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),
+
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(18),
+
         child: Container(
           width: double.infinity,
+
           padding: EdgeInsets.symmetric(
             horizontal: cardPadding,
             vertical: (screenHeight * 0.023).clamp(14.0, 24.0),
           ),
+
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.grey.withValues(alpha: 0.10)),
+            border: Border.all(
+              color: Colors.grey.withValues(alpha: 0.10),
+            ),
+
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
@@ -281,18 +350,26 @@ final double sectionSpacing = 8.0;
               ),
             ],
           ),
+
           child: Directionality(
             textDirection: TextDirection.ltr,
+
             child: Row(
               children: [
                 Container(
                   width: iconBoxSize,
                   height: iconBoxSize,
+
                   decoration: BoxDecoration(
                     color: iconColor.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(icon, color: iconColor, size: iconSize),
+
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: iconSize,
+                  ),
                 ),
 
                 SizedBox(width: screenWidth * 0.035),
@@ -300,6 +377,7 @@ final double sectionSpacing = 8.0;
                 Expanded(
                   child: Directionality(
                     textDirection: TextDirection.rtl,
+
                     child: Text(
                       title,
                       textAlign: TextAlign.right,
