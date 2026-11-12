@@ -1,3 +1,4 @@
+
 import 'package:isar/isar.dart';
 
 part 'evaluation_model.g.dart';
@@ -6,25 +7,27 @@ part 'evaluation_model.g.dart';
 class EvaluationModel {
   Id id = Isar.autoIncrement;
 
-  /// شناسه صنف؛ هر ارزیابی به یک صنف مشخص تعلق دارد.
+  // مشخصات صنف
   late int classId;
-
-  /// نام صنف
   late String className;
 
-  /// نام شاگرد
+  // مشخصات شاگرد
   late String studentName;
 
-  /// پاسخ‌های پرسش‌نامه به شکل متن ذخیره می‌شوند.
-  /// مثال: یک ساعت، 3، بلی، نام پروژه
+  // پاسخ‌های شاگرد
   late List<String> answers;
 
-  /// تعداد سوالات
+  // تعداد سوالات
   late int totalQuestions;
 
-  /// این پرسش‌نامه پاسخ درست یا غلط ندارد.
+  // تعداد پاسخ‌های درست
   int correctAnswers = 0;
 
-  /// تاریخ و زمان انجام ارزیابی
+  // تاریخ ارزیابی
   late DateTime evaluatedAt;
+
+  /// نسخه ثابت سوالات صنف در زمان ارزیابی
+  /// سوالات به شکل JSON ذخیره می‌شوند.
+  /// این فیلد برای حفظ سوالات ارزیابی‌های قبلی است.
+  String questionSnapshotJson = '';
 }

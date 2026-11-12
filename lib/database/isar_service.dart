@@ -1,12 +1,19 @@
+
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/class_model.dart';
 import '../models/evaluation_model.dart';
+import '../models/question_model.dart';
 
 class IsarService {
   static Isar? _isar;
 
+  // =====================================================
+  // DATABASE
+  // =====================================================
+
+  // باز کردن دیتابیس
   static Future<Isar> getInstance() async {
     if (_isar != null && _isar!.isOpen) {
       return _isar!;
@@ -14,21 +21,40 @@ class IsarService {
 
     final directory = await getApplicationDocumentsDirectory();
 
-    _isar = await Isar.open([
-      ClassModelSchema,
-      EvaluationModelSchema,
-    ], directory: directory.path);
+    _isar = await Isar.open(
+      [
+        ClassModelSchema,
+        EvaluationModelSchema,
+        QuestionModelSchema,
+      ],
+      directory: directory.path,
+    );
 
     return _isar!;
   }
 
-  // ذخیره ارزیابی
-  static Future<void> saveEvaluation(EvaluationModel evaluation) async {
+  // =====================================================
+  // CLASSES
+  // =====================================================
+
+  // دریافت تمام صنف‌ها
+  static Future<List<ClassModel>> getAllClasses() async {
     final isar = await getInstance();
 
-    final cleanName = evaluation.studentName.trim();
+    return isar.classModels.where().findAll();
+  }
 
-    if (cleanName.isEmpty) {
+  // =====================================================
+  // EVALUATIONS
+  // =====================================================
+
+  // ذخیره ارزیابی
+  static Future<void> saveEvaluation(
+    EvaluationModel evaluation,
+  ) async {
+    final isar = await getInstance();
+
+    if (evaluation.studentName.trim().isEmpty) {
       throw Exception('نام شاگرد الزامی است.');
     }
 
@@ -43,20 +69,17 @@ class IsarService {
     }
   }
 
-  // دریافت تمام صنف‌ها
-  static Future<List<ClassModel>> getAllClasses() async {
-    final isar = await getInstance();
-    return isar.classModels.where().findAll();
-  }
-
   // دریافت تمام ارزیابی‌ها
   static Future<List<EvaluationModel>> getAllEvaluations() async {
     final isar = await getInstance();
+
     return isar.evaluationModels.where().findAll();
   }
 
-  // دریافت ارزیابی‌های یک صنف مشخص
-  static Future<List<EvaluationModel>> getClassEvaluations(int classId) async {
+  // دریافت ارزیابی‌های یک صنف
+  static Future<List<EvaluationModel>> getClassEvaluations(
+    int classId,
+  ) async {
     final isar = await getInstance();
 
     final evaluations = await isar.evaluationModels
@@ -64,17 +87,20 @@ class IsarService {
         .classIdEqualTo(classId)
         .findAll();
 
-    evaluations.sort((a, b) => a.studentName.compareTo(b.studentName));
+    evaluations.sort(
+      (a, b) => a.studentName.compareTo(b.studentName),
+    );
 
     return evaluations;
   }
 
-  // دریافت ارزیابی شاگرد در یک صنف مشخص
+  // دریافت ارزیابی یک شاگرد در یک صنف
   static Future<EvaluationModel?> getStudentEvaluation(
     int classId,
     String studentName,
   ) async {
     final isar = await getInstance();
+
     final cleanName = studentName.trim();
 
     if (cleanName.isEmpty) {
@@ -95,24 +121,30 @@ class IsarService {
     return null;
   }
 
-  // بررسی ارزیابی شاگرد در همان صنف
+  // بررسی اینکه شاگرد ارزیابی شده یا خیر
   static Future<bool> isStudentEvaluated(
     int classId,
     String studentName,
   ) async {
-    final evaluation = await getStudentEvaluation(classId, studentName);
+    final evaluation = await getStudentEvaluation(
+      classId,
+      studentName,
+    );
 
     return evaluation != null;
   }
 
-  // حذف ارزیابی شاگرد از یک صنف
+  // حذف ارزیابی یک شاگرد
   static Future<void> deleteStudentEvaluation(
     int classId,
     String studentName,
   ) async {
     final isar = await getInstance();
 
-    final evaluation = await getStudentEvaluation(classId, studentName);
+    final evaluation = await getStudentEvaluation(
+      classId,
+      studentName,
+    );
 
     if (evaluation == null) {
       return;
@@ -123,8 +155,10 @@ class IsarService {
     });
   }
 
-  // حذف تمام ارزیابی‌های یک صنف
-  static Future<void> deleteClassEvaluations(int classId) async {
+  // حذف ارزیابی‌های یک صنف
+  static Future<void> deleteClassEvaluations(
+    int classId,
+  ) async {
     final isar = await getInstance();
 
     final evaluations = await isar.evaluationModels
@@ -136,10 +170,65 @@ class IsarService {
       return;
     }
 
-    final ids = evaluations.map((evaluation) => evaluation.id).toList();
+    final ids = evaluations
+        .map((evaluation) => evaluation.id)
+        .toList();
 
     await isar.writeTxn(() async {
       await isar.evaluationModels.deleteAll(ids);
+    });
+  }
+
+  // =====================================================
+  // QUESTION BANK
+  // =====================================================
+
+  // ذخیره سوالات جدید
+  // سوالات قبلی بانک با سوالات جدید جایگزین می‌شوند.
+  // ارزیابی‌های قبلی حذف نمی‌شوند.
+  static Future<void> saveQuestions(
+    List<QuestionModel> questions,
+  ) async {
+    if (questions.isEmpty) {
+      throw Exception('هیچ سوالی برای ذخیره وجود ندارد.');
+    }
+
+    final isar = await getInstance();
+
+    await isar.writeTxn(() async {
+      await isar.questionModels.clear();
+
+      await isar.questionModels.putAll(questions);
+    });
+
+    final savedQuestions = await getAllQuestions();
+
+    if (savedQuestions.length != questions.length) {
+      throw Exception('ذخیره تمام سوالات موفق نبود.');
+    }
+  }
+
+  // دریافت تمام سوالات
+  static Future<List<QuestionModel>> getAllQuestions() async {
+    final isar = await getInstance();
+
+    return isar.questionModels.where().findAll();
+  }
+
+  // تعداد سوالات
+  static Future<int> getQuestionCount() async {
+    final isar = await getInstance();
+
+    return isar.questionModels.count();
+  }
+
+  // حذف تمام سوالات بانک
+  // این متد ارزیابی‌های قبلی را حذف نمی‌کند.
+  static Future<void> deleteAllQuestions() async {
+    final isar = await getInstance();
+
+    await isar.writeTxn(() async {
+      await isar.questionModels.clear();
     });
   }
 }

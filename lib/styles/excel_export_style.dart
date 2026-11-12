@@ -1,6 +1,5 @@
-
-import 'package:excel/excel.dart';
-
+import 'package:excel_plus/excel_plus.dart';
+import 'package:excel_plus/excel_plus.dart' hide Border;
 class ExcelExportStyle {
   ExcelExportStyle._();
 

@@ -1,10 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../database/isar_service.dart';
-import '../folder_questions/questions.dart';
 import '../models/class_model.dart';
 import '../models/evaluation_model.dart';
+import '../models/question_model.dart';
 
 class EvaluationScreen extends StatefulWidget {
   final ClassModel classModel;
@@ -24,31 +26,24 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
   static const Color backgroundColor = Color(0xFFF0F6FF);
   static const Color primaryColor = Color(0xFF6C5CE7);
 
-  
-
   int currentQuestion = 0;
-  late List<String?> answers;
+
+  List<String?> answers = [];
+
+  /// نسخه سؤال‌های ثابت این صنف
+  List<Map<String, dynamic>> examQuestions = [];
 
   final TextEditingController textController = TextEditingController();
   final TextEditingController projectController = TextEditingController();
 
   bool isSaving = false;
+  bool isLoading = true;
+  bool alreadyEvaluated = false;
 
   @override
   void initState() {
     super.initState();
-
-    answers = List<String?>.filled(questions.length, null);
-
-    // نام شاگرد باید موجود باشد.
-    if (widget.studentName.trim().isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _showMessage('نام شاگرد معتبر نیست');
-          Navigator.pop(context, false);
-        }
-      });
-    }
+    loadExamQuestions();
   }
 
   @override
@@ -58,7 +53,173 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     super.dispose();
   }
 
-  Map<String, dynamic> get currentQuestionData => questions[currentQuestion];
+  // =====================================================
+  // QUESTION SNAPSHOT
+  // =====================================================
+
+  Map<String, dynamic> questionToMap(QuestionModel question) {
+    return {
+      'question': question.question,
+      'type': question.type,
+      'options': question.options,
+      'correctAnswer': question.correctAnswer,
+    };
+  }
+
+  List<Map<String, dynamic>> decodeSnapshot(String json) {
+    final decoded = jsonDecode(json);
+
+    if (decoded is! List) {
+      throw Exception('نسخه ذخیره‌شده سوالات معتبر نیست.');
+    }
+
+    return decoded.map((item) {
+      final map = Map<String, dynamic>.from(item as Map);
+
+      return {
+        'question': map['question']?.toString() ?? '',
+        'type': map['type']?.toString() ?? '',
+        'options': (map['options'] as List? ?? [])
+            .map((option) => option.toString())
+            .toList(),
+        'correctAnswer': map['correctAnswer']?.toString(),
+      };
+    }).toList();
+  }
+
+  String encodeSnapshot(List<Map<String, dynamic>> questions) {
+    return jsonEncode(questions);
+  }
+
+  // =====================================================
+  // LOAD QUESTIONS FOR THIS CLASS
+  // =====================================================
+
+  Future<void> loadExamQuestions() async {
+    try {
+      final cleanStudentName = widget.studentName.trim();
+
+      if (cleanStudentName.isEmpty) {
+        throw Exception('نام شاگرد معتبر نیست.');
+      }
+
+      // ابتدا بررسی می‌کنیم این شاگرد قبلاً امتحان داده است یا خیر.
+      final existingStudent = await IsarService.getStudentEvaluation(
+        widget.classModel.id,
+        cleanStudentName,
+      );
+
+      if (existingStudent != null) {
+        if (!mounted) return;
+
+        setState(() {
+          alreadyEvaluated = true;
+          isLoading = false;
+        });
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+
+          _showMessage(
+            'این شاگرد قبلاً در این صنف ارزیابی شده است. نتیجه قبلی تغییر نمی‌کند.',
+          );
+
+          Navigator.pop(context, false);
+        });
+
+        return;
+      }
+
+      // تمام ارزیابی‌های قبلی همین صنف را دریافت می‌کنیم.
+      final classEvaluations = await IsarService.getClassEvaluations(
+        widget.classModel.id,
+      );
+
+      // اگر صنف قبلاً امتحان داده باشد، نسخه سؤال‌های همان امتحان استفاده می‌شود.
+      final savedSnapshots = classEvaluations
+          .where((evaluation) {
+            return evaluation.questionSnapshotJson.trim().isNotEmpty;
+          })
+          .toList()
+        ..sort((a, b) => a.evaluatedAt.compareTo(b.evaluatedAt));
+
+      List<Map<String, dynamic>> loadedQuestions;
+
+      if (savedSnapshots.isNotEmpty) {
+        loadedQuestions = decodeSnapshot(
+          savedSnapshots.first.questionSnapshotJson,
+        );
+      } else {
+        // این صنف هنوز امتحان نداده است.
+        // بانک عمومی سؤال‌ها برای اولین بار استفاده می‌شود.
+        final databaseQuestions = await IsarService.getAllQuestions();
+
+        if (databaseQuestions.isEmpty) {
+          throw Exception(
+            'هیچ سوالی در برنامه وجود ندارد. ابتدا فایل Excel سوالات را وارد کنید.',
+          );
+        }
+
+        loadedQuestions = databaseQuestions
+            .map(questionToMap)
+            .toList();
+      }
+
+      if (loadedQuestions.isEmpty) {
+        throw Exception('سوال معتبری برای این صنف پیدا نشد.');
+      }
+
+      for (final question in loadedQuestions) {
+        final type = question['type']?.toString() ?? '';
+        final questionText = question['question']?.toString() ?? '';
+
+        if (questionText.trim().isEmpty ||
+            !['choice', 'number', 'text', 'project'].contains(type)) {
+          throw Exception('ساختار یکی از سوالات معتبر نیست.');
+        }
+
+        if (type == 'choice') {
+          final options = question['options'] as List;
+
+          if (options.length < 2) {
+            throw Exception('یک سوال چندگزینه‌ای کمتر از دو گزینه دارد.');
+          }
+        }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        examQuestions = loadedQuestions;
+        answers = List<String?>.filled(examQuestions.length, null);
+        isLoading = false;
+      });
+
+      loadCurrentText();
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        isLoading = false;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        _showMessage(e.toString().replaceFirst('Exception: ', ''));
+
+        Navigator.pop(context, false);
+      });
+    }
+  }
+
+  // =====================================================
+  // CURRENT QUESTION
+  // =====================================================
+
+  Map<String, dynamic> get currentQuestionData {
+    return examQuestions[currentQuestion];
+  }
 
   void selectAnswer(String answer) {
     setState(() {
@@ -82,7 +243,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
   }
 
   String? getCurrentAnswer() {
-    final String type = currentQuestionData['type'];
+    final String type = currentQuestionData['type'].toString();
 
     if (type == 'number' || type == 'text') {
       final value = textController.text.trim();
@@ -111,6 +272,8 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
   }
 
   void loadCurrentText() {
+    if (examQuestions.isEmpty) return;
+
     final type = currentQuestionData['type'];
 
     if (type == 'number' || type == 'text') {
@@ -132,8 +295,12 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     }
   }
 
+  // =====================================================
+  // NAVIGATION
+  // =====================================================
+
   Future<void> nextQuestion() async {
-    if (isSaving) return;
+    if (isSaving || examQuestions.isEmpty) return;
 
     final answer = getCurrentAnswer();
 
@@ -148,7 +315,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
 
     answers[currentQuestion] = answer;
 
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < examQuestions.length - 1) {
       setState(() {
         currentQuestion++;
       });
@@ -176,8 +343,12 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     loadCurrentText();
   }
 
+  // =====================================================
+  // SAVE EVALUATION
+  // =====================================================
+
   Future<void> submitEvaluation() async {
-    if (isSaving) return;
+    if (isSaving || examQuestions.isEmpty) return;
 
     final currentAnswer = getCurrentAnswer();
 
@@ -188,7 +359,6 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
 
     answers[currentQuestion] = currentAnswer;
 
-    // بررسی تمام پاسخ‌ها
     for (int i = 0; i < answers.length; i++) {
       if (answers[i] == null || answers[i]!.trim().isEmpty) {
         setState(() {
@@ -202,7 +372,6 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
       }
     }
 
-    // بررسی نام شاگرد
     final cleanStudentName = widget.studentName.trim();
 
     if (cleanStudentName.isEmpty) {
@@ -215,36 +384,58 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     });
 
     try {
-      // جستجو فقط در صنف انتخاب‌شده انجام می‌شود.
+      // بررسی دوباره برای جلوگیری از ثبت تکراری.
       final existing = await IsarService.getStudentEvaluation(
         widget.classModel.id,
         cleanStudentName,
       );
 
-      final EvaluationModel evaluation;
-
       if (existing != null) {
-        // اگر همین شاگرد در همین صنف قبلاً ثبت شده باشد،
-        // رکورد قبلی به‌روز می‌شود و رکورد تکراری ساخته نمی‌شود.
-        evaluation = existing
-          ..classId = widget.classModel.id
-          ..className = widget.classModel.className
-          ..studentName = cleanStudentName
-          ..answers = answers.map((answer) => answer ?? '').toList()
-          ..totalQuestions = questions.length
-          ..correctAnswers = 0
-          ..evaluatedAt = DateTime.now();
-      } else {
-        // شناسه جدید برای ارزیابی جدید
-        evaluation = EvaluationModel()
-          ..classId = widget.classModel.id
-          ..className = widget.classModel.className
-          ..studentName = cleanStudentName
-          ..answers = answers.map((answer) => answer ?? '').toList()
-          ..totalQuestions = questions.length
-          ..correctAnswers = 0
-          ..evaluatedAt = DateTime.now();
+        throw Exception(
+          'این شاگرد قبلاً ارزیابی شده است و نتیجه قبلی تغییر نمی‌کند.',
+        );
       }
+
+      // بررسی می‌کنیم آیا شاگرد دیگری در این صنف قبلاً امتحان داده است.
+      final classEvaluations = await IsarService.getClassEvaluations(
+        widget.classModel.id,
+      );
+
+      final savedSnapshots = classEvaluations
+          .where((evaluation) {
+            return evaluation.questionSnapshotJson.trim().isNotEmpty;
+          })
+          .toList()
+        ..sort((a, b) => a.evaluatedAt.compareTo(b.evaluatedAt));
+
+      String snapshotJson;
+
+      if (savedSnapshots.isNotEmpty) {
+        // نسخه قبلی صنف را حفظ می‌کنیم.
+        snapshotJson = savedSnapshots.first.questionSnapshotJson;
+
+        // اطمینان از اینکه پاسخ‌ها با همان نسخه هستند.
+        final frozenQuestions = decodeSnapshot(snapshotJson);
+
+        if (frozenQuestions.length != answers.length) {
+          throw Exception(
+            'تعداد سوالات با نسخه ثابت این صنف مطابقت ندارد.',
+          );
+        }
+      } else {
+        // اولین شاگرد صنف است؛ نسخه فعلی سؤال‌ها را قفل می‌کنیم.
+        snapshotJson = encodeSnapshot(examQuestions);
+      }
+
+      final evaluation = EvaluationModel()
+        ..classId = widget.classModel.id
+        ..className = widget.classModel.className
+        ..studentName = cleanStudentName
+        ..answers = answers.map((answer) => answer ?? '').toList()
+        ..totalQuestions = examQuestions.length
+        ..correctAnswers = 0
+        ..evaluatedAt = DateTime.now()
+        ..questionSnapshotJson = snapshotJson;
 
       await IsarService.saveEvaluation(evaluation);
 
@@ -256,14 +447,15 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
 
       if (!mounted) return;
 
-      // نتیجه true به صفحه انتخاب شاگرد برگردانده می‌شود.
       Navigator.pop(context, true);
     } catch (e, stackTrace) {
       debugPrint('Save Evaluation Error: $e');
       debugPrint('$stackTrace');
 
       if (mounted) {
-        _showMessage('خطا در ذخیره ارزیابی');
+        _showMessage(
+          e.toString().replaceFirst('Exception: ', ''),
+        );
       }
     } finally {
       if (mounted) {
@@ -273,6 +465,10 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
       }
     }
   }
+
+  // =====================================================
+  // MESSAGE
+  // =====================================================
 
   void _showMessage(String message) {
     if (!mounted) return;
@@ -291,8 +487,12 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
       );
   }
 
+  // =====================================================
+  // QUESTION CARD
+  // =====================================================
+
   Widget _buildQuestionCard() {
-    final String question = currentQuestionData['question'];
+    final String question = currentQuestionData['question'].toString();
 
     return Container(
       width: double.infinity,
@@ -320,14 +520,22 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     );
   }
 
-  Widget _buildOptionCard(String option, int index, {bool isProject = false}) {
+  // =====================================================
+  // OPTION CARD
+  // =====================================================
+
+  Widget _buildOptionCard(
+    String option,
+    int index, {
+    bool isProject = false,
+  }) {
     final selectedAnswer = answers[currentQuestion];
 
     final bool selected = isProject
         ? (option == 'بلی'
-              ? selectedAnswer == 'بلی' ||
-                    (selectedAnswer?.startsWith('بلی - ') ?? false)
-              : selectedAnswer == option)
+            ? selectedAnswer == 'بلی' ||
+                (selectedAnswer?.startsWith('بلی - ') ?? false)
+            : selectedAnswer == option)
         : selectedAnswer == option;
 
     final String letter = String.fromCharCode(65 + index);
@@ -343,7 +551,10 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 13,
+        ),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFFEAE7FF) : Colors.white,
           borderRadius: BorderRadius.circular(15),
@@ -359,7 +570,9 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
               height: 38,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: selected ? primaryColor : const Color(0xFFF1F3F5),
+                color: selected
+                    ? primaryColor
+                    : const Color(0xFFF1F3F5),
                 shape: BoxShape.circle,
               ),
               child: Text(
@@ -393,8 +606,12 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     );
   }
 
+  // =====================================================
+  // TEXT FIELD
+  // =====================================================
+
   Widget _buildTextField() {
-    final String type = currentQuestionData['type'];
+    final String type = currentQuestionData['type'].toString();
     final bool number = type == 'number';
 
     return Container(
@@ -405,7 +622,9 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
       ),
       child: TextField(
         controller: textController,
-        keyboardType: number ? TextInputType.number : TextInputType.multiline,
+        keyboardType: number
+            ? TextInputType.number
+            : TextInputType.multiline,
         maxLines: number ? 1 : 5,
         textDirection: TextDirection.rtl,
         onChanged: updateTextAnswer,
@@ -423,11 +642,16 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     );
   }
 
+  // =====================================================
+  // PROJECT QUESTION
+  // =====================================================
+
   Widget _buildProjectQuestion() {
     final selected = answers[currentQuestion];
 
     final bool yesSelected =
-        selected == 'بلی' || (selected?.startsWith('بلی - ') ?? false);
+        selected == 'بلی' ||
+        (selected?.startsWith('بلی - ') ?? false);
 
     return Column(
       children: [
@@ -468,11 +692,64 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     );
   }
 
+  // =====================================================
+  // LOADING SCREEN
+  // =====================================================
+
+  Widget _buildLoadingScreen() {
+    return const Center(
+      child: CircularProgressIndicator(
+        color: primaryColor,
+      ),
+    );
+  }
+
+  // =====================================================
+  // BUILD
+  // =====================================================
+
   @override
   Widget build(BuildContext context) {
-    final String type = currentQuestionData['type'];
-    final options = currentQuestionData['options'] as List<String>;
-    final double progress = (currentQuestion + 1) / questions.length;
+    if (isLoading) {
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: AppBar(
+            backgroundColor: backgroundColor,
+            elevation: 0,
+            centerTitle: true,
+            title: Text(
+              'ارزیابی شاگرد',
+              style: GoogleFonts.vazirmatn(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          body: _buildLoadingScreen(),
+        ),
+      );
+    }
+
+    if (examQuestions.isEmpty || alreadyEvaluated) {
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          backgroundColor: backgroundColor,
+          body: _buildLoadingScreen(),
+        ),
+      );
+    }
+
+    final String type = currentQuestionData['type'].toString();
+
+    final options = (currentQuestionData['options'] as List)
+        .map((option) => option.toString())
+        .toList();
+
+    final double progress =
+        (currentQuestion + 1) / examQuestions.length;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -497,7 +774,10 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
                 child: Row(
                   children: [
-                    const Icon(Icons.person_outline, color: primaryColor),
+                    const Icon(
+                      Icons.person_outline,
+                      color: primaryColor,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -509,7 +789,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
                       ),
                     ),
                     Text(
-                      '${currentQuestion + 1}/${questions.length}',
+                      '${currentQuestion + 1}/${examQuestions.length}',
                       style: GoogleFonts.vazirmatn(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -524,7 +804,9 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
                   value: progress,
                   minHeight: 6,
                   backgroundColor: Colors.grey.shade300,
-                  valueColor: const AlwaysStoppedAnimation<Color>(primaryColor),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    primaryColor,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -538,77 +820,76 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
                       const SizedBox(height: 16),
                       if (type == 'choice')
                         ...options.asMap().entries.map(
-                          (entry) => _buildOptionCard(entry.value, entry.key),
+                          (entry) => _buildOptionCard(
+                            entry.value,
+                            entry.key,
+                          ),
                         ),
-                      if (type == 'number' || type == 'text') _buildTextField(),
-                      if (type == 'project') _buildProjectQuestion(),
+                      if (type == 'number' || type == 'text')
+                        _buildTextField(),
+                      if (type == 'project')
+                        _buildProjectQuestion(),
                     ],
                   ),
                 ),
               ),
               Container(
-  padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-  decoration: const BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.vertical(
-      top: Radius.circular(22),
-    ),
-  ),
-  child: Row(
-    textDirection: TextDirection.ltr,
-    children: [
-      // دکمه قبلی - سمت چپ
-      Expanded(
-        child: OutlinedButton(
-          onPressed: currentQuestion > 0 && !isSaving
-              ? previousQuestion
-              : null,
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size(0, 50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-          ),
-          child: Text(
-            'قبلی',
-            style: GoogleFonts.vazirmatn(
-              fontSize: 13,
-            ),
-          ),
-        ),
-      ),
-
-      const SizedBox(width: 10),
-
-      // دکمه بعدی - سمت راست
-      Expanded(
-        child: ElevatedButton(
-          onPressed: isSaving ? null : nextQuestion,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            minimumSize: const Size(0, 50),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-          ),
-          child: Text(
-            isSaving
-                ? 'در حال ذخیره...'
-                : currentQuestion == questions.length - 1
-                    ? 'ثبت ارزیابی'
-                    : 'بعدی',
-            style: GoogleFonts.vazirmatn(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    ],
-  ),
-),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(22),
+                  ),
+                ),
+                child: Row(
+                  textDirection: TextDirection.ltr,
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: currentQuestion > 0 && !isSaving
+                            ? previousQuestion
+                            : null,
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        child: Text(
+                          'قبلی',
+                          style: GoogleFonts.vazirmatn(fontSize: 13),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: isSaving ? null : nextQuestion,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          minimumSize: const Size(0, 50),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        child: Text(
+                          isSaving
+                              ? 'در حال ذخیره...'
+                              : currentQuestion == examQuestions.length - 1
+                                  ? 'ثبت ارزیابی'
+                                  : 'بعدی',
+                          style: GoogleFonts.vazirmatn(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

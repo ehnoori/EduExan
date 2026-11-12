@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:excel/excel.dart' hide Border;
+import 'package:excel_plus/excel_plus.dart' hide Border;
 import 'package:path_provider/path_provider.dart';
 
 import '../models/class_model.dart';

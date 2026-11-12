@@ -42,13 +42,18 @@ const EvaluationModelSchema = CollectionSchema(
       name: r'evaluatedAt',
       type: IsarType.dateTime,
     ),
-    r'studentName': PropertySchema(
+    r'questionSnapshotJson': PropertySchema(
       id: 5,
+      name: r'questionSnapshotJson',
+      type: IsarType.string,
+    ),
+    r'studentName': PropertySchema(
+      id: 6,
       name: r'studentName',
       type: IsarType.string,
     ),
     r'totalQuestions': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'totalQuestions',
       type: IsarType.long,
     )
@@ -81,6 +86,7 @@ int _evaluationModelEstimateSize(
     }
   }
   bytesCount += 3 + object.className.length * 3;
+  bytesCount += 3 + object.questionSnapshotJson.length * 3;
   bytesCount += 3 + object.studentName.length * 3;
   return bytesCount;
 }
@@ -96,8 +102,9 @@ void _evaluationModelSerialize(
   writer.writeString(offsets[2], object.className);
   writer.writeLong(offsets[3], object.correctAnswers);
   writer.writeDateTime(offsets[4], object.evaluatedAt);
-  writer.writeString(offsets[5], object.studentName);
-  writer.writeLong(offsets[6], object.totalQuestions);
+  writer.writeString(offsets[5], object.questionSnapshotJson);
+  writer.writeString(offsets[6], object.studentName);
+  writer.writeLong(offsets[7], object.totalQuestions);
 }
 
 EvaluationModel _evaluationModelDeserialize(
@@ -113,8 +120,9 @@ EvaluationModel _evaluationModelDeserialize(
   object.correctAnswers = reader.readLong(offsets[3]);
   object.evaluatedAt = reader.readDateTime(offsets[4]);
   object.id = id;
-  object.studentName = reader.readString(offsets[5]);
-  object.totalQuestions = reader.readLong(offsets[6]);
+  object.questionSnapshotJson = reader.readString(offsets[5]);
+  object.studentName = reader.readString(offsets[6]);
+  object.totalQuestions = reader.readLong(offsets[7]);
   return object;
 }
 
@@ -138,6 +146,8 @@ P _evaluationModelDeserializeProp<P>(
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
+      return (reader.readString(offset)) as P;
+    case 7:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -825,6 +835,142 @@ extension EvaluationModelQueryFilter
   }
 
   QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'questionSnapshotJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'questionSnapshotJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'questionSnapshotJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'questionSnapshotJson',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'questionSnapshotJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'questionSnapshotJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'questionSnapshotJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'questionSnapshotJson',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'questionSnapshotJson',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
+      questionSnapshotJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'questionSnapshotJson',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterFilterCondition>
       studentNameEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1081,6 +1227,20 @@ extension EvaluationModelQuerySortBy
   }
 
   QueryBuilder<EvaluationModel, EvaluationModel, QAfterSortBy>
+      sortByQuestionSnapshotJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'questionSnapshotJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterSortBy>
+      sortByQuestionSnapshotJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'questionSnapshotJson', Sort.desc);
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterSortBy>
       sortByStudentName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'studentName', Sort.asc);
@@ -1179,6 +1339,20 @@ extension EvaluationModelQuerySortThenBy
   }
 
   QueryBuilder<EvaluationModel, EvaluationModel, QAfterSortBy>
+      thenByQuestionSnapshotJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'questionSnapshotJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterSortBy>
+      thenByQuestionSnapshotJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'questionSnapshotJson', Sort.desc);
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QAfterSortBy>
       thenByStudentName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'studentName', Sort.asc);
@@ -1245,6 +1419,14 @@ extension EvaluationModelQueryWhereDistinct
   }
 
   QueryBuilder<EvaluationModel, EvaluationModel, QDistinct>
+      distinctByQuestionSnapshotJson({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'questionSnapshotJson',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<EvaluationModel, EvaluationModel, QDistinct>
       distinctByStudentName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'studentName', caseSensitive: caseSensitive);
@@ -1297,6 +1479,13 @@ extension EvaluationModelQueryProperty
       evaluatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'evaluatedAt');
+    });
+  }
+
+  QueryBuilder<EvaluationModel, String, QQueryOperations>
+      questionSnapshotJsonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'questionSnapshotJson');
     });
   }
 
