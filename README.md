@@ -5,12 +5,12 @@
 
 ### Class Management & Student Evaluation System
 
-**A Flutter application for managing classes, evaluating students, organizing questionnaires, and maintaining assessment records.**
+**A Flutter application for managing classes, students, questionnaires, and student evaluations.**
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0.0-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.13.2-0175C2?logo=dart&logoColor=white)](https://dart.dev)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Cross--Platform-green)](https://github.com/ehnoori/EduExan)
-[![Version](https://img.shields.io/badge/Version-3.0.0-blue)](https://github.com/ehnoori/EduExan)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green)](https://github.com/ehnoori/EduExan)
+[![Version](https://img.shields.io/badge/Version-3.1.0-blue)](https://github.com/ehnoori/EduExan)
 
 [**GitHub Repository**](https://github.com/ehnoori/EduExan) · [**Report an Issue**](https://github.com/ehnoori/EduExan/issues)
 
@@ -20,59 +20,92 @@
 
 ## 📖 Overview
 
-**EduExan** is a Flutter-based class management and student evaluation application designed to simplify classroom administration and assessment processes.
+**EduExan** is a Flutter-based class management and student evaluation system designed to simplify classroom administration and academic assessment.
 
-The application helps users create and manage classes, organize evaluation questions, assess students, and maintain student evaluation records.
+The application provides tools for creating classes, managing students, importing questionnaires from Excel files, conducting structured student evaluations, and storing evaluation results.
 
-EduExan uses local data storage to preserve information and supports importing questions from Excel files.
+EduExan uses a local database to preserve application data and provides a structured evaluation workflow that helps maintain consistency across student assessments.
 
 ## 📸 Screenshots
 
 ### Application Preview
 
-![EduExan Application Preview](flutter_01.png)
+<div align="center">
 
-More application screenshots are available in the [`screenshots`](screenshots/) directory.
+| Android | Application Graphics | iOS |
+|:---:|:---:|:---:|
+| ![Android](screenshots/android.png) | ![Application Graphics](screenshots/graphic.png) | ![iOS](screenshots/ios.png) |
+
+</div>
 
 ---
 
 ## ✨ Key Features
 
 ### 🏫 Class Management
-- Create and manage classes.
-- View the list of available classes.
-- Organize student evaluation activities by class.
+- Create new classes.
+- View and manage existing classes.
+- Organize evaluation activities by class.
+- Keep evaluation records associated with their classes.
 
-### 📝 Student Evaluation
+### 👨‍🎓 Student Management
+- Manage students within classes.
 - Select students for evaluation.
-- Evaluate students using structured questionnaires.
-- Save evaluation answers and results.
+- Organize student evaluation records.
 - Prevent duplicate evaluations for the same student in a class.
 
+### 📝 Student Evaluation
+- Evaluate students using structured questionnaires.
+- Display questions and their available answer options.
+- Support different question types.
+- Save completed evaluations.
+- Retrieve and review previously saved results.
+
 ### 📊 Excel Question Import
-- Import questions from Excel (`.xlsx`) files.
+- Import questionnaire files in `.xlsx` format.
 - Support Persian question and column headers.
 - Read multiple-choice questions and their options.
-- Support question types such as choice, number, text, and project.
-- Preview imported Excel data before saving.
-- Store the selected Excel file in the application's permanent storage.
+- Support question types:
+  - `choice`
+  - `number`
+  - `text`
+  - `project`
+- Preview imported questions before saving.
+- Manage imported questionnaire files.
+- Store selected Excel files in application storage.
+
+### 📚 Question Management
+- Manage questionnaire files.
+- View the number of questions in each file.
+- Select an active questionnaire file.
+- Preview imported questions.
+- Delete unwanted questionnaire files.
+- Maintain the currently selected question set.
+
+### 🔒 Question Snapshot System
+- Save a snapshot of the questions when the first evaluation in a class is submitted.
+- Use the same question set for subsequent students in that class.
+- Keep historical evaluation records independent of later question imports.
+- Help ensure consistent assessment across students.
 
 ### 💾 Local Database
-- Store classes, questions, and evaluation records locally.
-- Use Isar database for data persistence.
-- Retrieve previous evaluation records.
-- Keep historical evaluation data separate from the current question bank.
+- Store classes and student information.
+- Store questions and evaluation records.
+- Preserve data locally using Isar.
+- Retrieve previously saved records.
+- Keep question snapshots associated with evaluation records.
 
-### 🔒 Consistent Evaluation Questions
-- Save a question snapshot when the first evaluation in a class is submitted.
-- Use the same question set for subsequent students in that class.
-- Keep previously saved evaluation records independent of later question imports.
+### 📁 File Management
+- Select Excel files from the device.
+- Store imported files in application storage.
+- Manage saved questionnaire files.
+- Support file-related workflows implemented in the application.
 
-### 📁 Data Management
-- Import questionnaire data from Excel.
-- Manage the question bank.
-- Store evaluation results.
-- Support sharing and file-related workflows where implemented.
+### 🌐 User Interface
+- Flutter-based user interface.
+- Persian typography using Google Fonts.
+- Support for Persian-language content.
+- Organized screens for class management and student evaluation.
 
 ---
 
@@ -86,9 +119,9 @@ More application screenshots are available in the [`screenshots`](screenshots/) 
 | Excel Plus | Excel file reading and processing |
 | File Picker | Selecting files from the device |
 | Path Provider | Application storage directories |
-| Shared Preferences | Saving simple application settings |
+| Shared Preferences | Saving application settings |
 | Google Fonts | Typography |
-| Share Plus | Sharing application content |
+| Share Plus | Sharing content |
 | Syncfusion PDF | PDF functionality |
 
 ---
@@ -104,7 +137,7 @@ More application screenshots are available in the [`screenshots`](screenshots/) 
 | macOS | Flutter project platform |
 | Web | Flutter project platform |
 
-*Platform support depends on the implementation and testing of individual features.*
+*Platform availability depends on the implementation and testing of individual features.*
 
 ---
 
@@ -153,7 +186,7 @@ flutter analyze
 
 ## 🧱 Project Structure
 
-The project is organized around Flutter screens, database services, and data models.
+The project follows a modular Flutter structure, separating screens, database services, models, and application resources.
 
 ```text
 EduExan/
@@ -174,9 +207,18 @@ EduExan/
 │   │   ├── question_model.dart
 │   │   └── evaluation_model.dart
 │   │
+│   ├── screens/
+│   │
+│   ├── widgets/
+│   │
 │   └── ...
 │
+├── assets/
+│
 ├── screenshots/
+│   ├── android.png
+│   ├── graphic.png
+│   └── ios.png
 │
 ├── test/
 │
@@ -189,24 +231,27 @@ EduExan/
 
 ## 📚 Evaluation Workflow
 
-The application follows a structured evaluation process:
+EduExan follows a structured evaluation process:
 
 1. Create a class.
-2. Import questions from an Excel file.
-3. Review the imported questions.
-4. Save questions to the local database.
-5. Select a class and a student.
-6. Complete the evaluation questionnaire.
-7. Save the evaluation result.
-8. Review previously saved evaluations.
+2. Manage students in the class.
+3. Import questions from an Excel file.
+4. Preview and review imported questions.
+5. Select the questionnaire for evaluation.
+6. Select a class and a student.
+7. Complete the evaluation questionnaire.
+8. Save the evaluation result.
+9. Review previously saved evaluations.
 
 ### Question Snapshot System
 
-EduExan preserves the question set used for a class evaluation.
+EduExan includes a question snapshot mechanism to maintain consistency during class evaluations.
 
-When the first student in a class is evaluated, the question set is saved as a snapshot. Subsequent evaluations in that class use the same snapshot.
+When the first student in a class is evaluated, the current question set is saved as a snapshot.
 
-This helps maintain consistency when evaluating multiple students.
+Subsequent student evaluations in that class use the same snapshot, even if the active questionnaire is changed later.
+
+This helps ensure that students in the same class are evaluated using a consistent set of questions.
 
 ---
 
@@ -224,12 +269,12 @@ EduExan supports Excel question files with columns such as:
 | گزینه D | Fourth option |
 | پاسخ صحیح | Correct answer |
 
-Example question types:
+### Supported Question Types
 
-- `choice`
-- `number`
-- `text`
-- `project`
+- `choice` — Multiple-choice questions.
+- `number` — Numeric questions.
+- `text` — Text-based questions.
+- `project` — Project-based questions.
 
 The first worksheet is used for importing questions.
 
@@ -237,16 +282,20 @@ The first worksheet is used for importing questions.
 
 ## 🔐 Data Persistence
 
-EduExan uses Isar to store application data locally.
+EduExan uses Isar Database to store application data locally.
 
-The application maintains separate data for:
+The application maintains data for:
 
 - Classes
-- Question bank
+- Students
+- Questions
+- Questionnaire files
 - Student evaluations
-- Question snapshots stored with evaluation records
+- Question snapshots
 
-Importing a new question file updates the question bank when the user saves it. Existing evaluation records are designed to remain available.
+Importing a new questionnaire does not intentionally replace historical evaluation snapshots.
+
+This helps preserve previously saved evaluation records.
 
 ---
 
@@ -256,12 +305,16 @@ Importing a new question file updates the question bank when the user saves it. 
 - [x] Student evaluation workflow
 - [x] Local database integration
 - [x] Excel question import
-- [x] Question snapshot support
 - [x] Persian Excel header support
+- [x] Multiple question types
+- [x] Question preview
+- [x] Question snapshot support
+- [x] Questionnaire file management
 - [ ] Improve reporting and analytics
 - [ ] Expand PDF reporting features
 - [ ] Improve backup and restore workflows
-- [ ] Additional UI and usability improvements
+- [ ] Add additional data visualization features
+- [ ] Further improve UI and usability
 
 ---
 
@@ -304,7 +357,9 @@ Contributions, suggestions, and bug reports are welcome.
 
 ## 📄 License
 
-No license has been confirmed for this repository yet. Add a `LICENSE` file if you intend to publish the project under an open-source license.
+No license has been confirmed for this repository yet.
+
+Add a `LICENSE` file if you intend to publish the project under an open-source license.
 
 ---
 

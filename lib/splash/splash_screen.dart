@@ -25,14 +25,14 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1300),
+      duration: const Duration(milliseconds: 1500),
     )..forward();
 
     _iconScale = CurvedAnimation(
       parent: _controller,
       curve: const Interval(
         0,
-        0.65,
+        0.7,
         curve: Curves.elasticOut,
       ),
     );
@@ -47,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _slide = Tween<Offset>(
-      begin: const Offset(0, 0.12),
+      begin: const Offset(0, 0.10),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
@@ -72,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: const Duration(milliseconds: 550),
         pageBuilder: (_, animation, __) => const HomeScreen(),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(
@@ -104,216 +104,215 @@ class _SplashScreenState extends State<SplashScreen>
     const blue = Color(0xFF3478F6);
     const navy = Color(0xFF172B5B);
     const lightBlue = Color(0xFF42A5F5);
+    const background = Color(0xFFF5F8FF);
 
-    final double screenWidth =
-        MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F8FF),
+      backgroundColor: background,
 
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 26),
+        child: Stack(
+          children: [
 
-          child: Column(
-            children: [
+            // دایره تزئینی بالا
+            Positioned(
+              top: -100,
+              right: -80,
+              child: Container(
+                width: 230,
+                height: 230,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: blue.withValues(alpha: 0.055),
+                ),
+              ),
+            ),
 
-              const Spacer(flex: 2),
+            // دایره تزئینی پایین
+            Positioned(
+              bottom: -100,
+              left: -80,
+              child: Container(
+                width: 230,
+                height: 230,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF16B89A)
+                      .withValues(alpha: 0.055),
+                ),
+              ),
+            ),
 
-              // آیکن اصلی
-              ScaleTransition(
-                scale: _iconScale,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 26),
 
-                child: Container(
-                  width: 150,
-                  height: 150,
+              child: Column(
+                children: [
 
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(42),
+                  const Spacer(flex: 2),
 
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFFE7F0FF),
-                        Color(0xFFD6E5FF),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                  // لوگوی EduExam بدون کادر سفید
+                  ScaleTransition(
+                    scale: _iconScale,
+
+                    child: Image.asset(
+                      'assets/images/a_clean_modern_high_resolution_vector_3d_style_e.png',
+                      width: 350,
+                      height: 350,
+                      fit: BoxFit.contain,
                     ),
-
-                    boxShadow: [
-                      BoxShadow(
-                        color: blue.withValues(alpha: 0.16),
-                        blurRadius: 30,
-                        offset: const Offset(0, 14),
-                      ),
-                    ],
                   ),
 
-                  child: Stack(
-                    alignment: Alignment.center,
+                 // const SizedBox(height: 10),
 
-                    children: [
+                  // عنوان و توضیحات
+                  FadeTransition(
+                    opacity: _fade,
 
-                      const Icon(
-                        Icons.assignment_rounded,
-                        size: 86,
-                        color: blue,
-                      ),
+                    child: SlideTransition(
+                      position: _slide,
 
-                      Positioned(
-                        right: 15,
-                        bottom: 15,
+                      child: Column(
+                        children: [
 
-                        child: Container(
-                          width: 45,
-                          height: 45,
+                          Text(
+                            'به اپلیکیشن ارزیابی صنف',
+                            textAlign: TextAlign.center,
+                            textDirection: TextDirection.rtl,
 
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF16B89A),
-                            borderRadius: BorderRadius.circular(16),
-
-                            border: Border.all(
-                              color: const Color(0xFFF5F8FF),
-                              width: 4,
+                            style: _style(
+                              screenWidth * 0.070,
+                              navy,
+                              FontWeight.w800,
                             ),
                           ),
 
-                          child: const Icon(
-                            Icons.check_rounded,
-                            size: 27,
-                            color: Colors.white,
+                          const SizedBox(height: 5),
+
+                          Text(
+                            'خوش آمدید!',
+                            textAlign: TextAlign.center,
+                            textDirection: TextDirection.rtl,
+
+                            style: _style(
+                              screenWidth * 0.095,
+                              blue,
+                              FontWeight.w800,
+                            ),
                           ),
-                        ),
+
+                          const SizedBox(height: 12),
+
+                          // خط تزئینی
+                          Container(
+                            width: 170,
+                            height: 4,
+
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+
+                              gradient: const LinearGradient(
+                                colors: [
+                                  lightBlue,
+                                  blue,
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 25),
+
+                          Text(
+                            'صنف‌ها، اعضا و ارزیابی‌ها را به آسانی '
+                            'مدیریت کنید و نتایج را به صورت فایل '
+                            'Excel دریافت کنید.',
+
+                            textAlign: TextAlign.center,
+                            textDirection: TextDirection.rtl,
+
+                            style: _style(
+                              screenWidth * 0.038,
+                              const Color(0xFF596B91),
+                              FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 48),
+                  const Spacer(flex: 2),
 
-              // عنوان و توضیحات
-              FadeTransition(
-                opacity: _fade,
+                  // دکمه شروع
+                  FadeTransition(
+                    opacity: _fade,
 
-                child: SlideTransition(
-                  position: _slide,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 62,
 
-                  child: Column(
-                    children: [
-
-                      Text(
-                        'به اپلیکیشن ارزیابی صنف',
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
-
-                        style: _style(
-                          screenWidth * 0.062,
-                          navy,
-                          FontWeight.w800,
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      Text(
-                        'خوش آمدید!',
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
-
-                        style: _style(
-                          screenWidth * 0.085,
-                          blue,
-                          FontWeight.w800,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // خط تزئینی
-                      Container(
-                        width: 170,
-                        height: 4,
-
+                      child: DecoratedBox(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-
                           gradient: const LinearGradient(
                             colors: [
-                              lightBlue,
-                              blue,
+                              Color(0xFF3478F6),
+                              Color(0xFF2259D6),
+                            ],
+                          ),
+
+                          borderRadius: BorderRadius.circular(20),
+
+                          boxShadow: [
+                            BoxShadow(
+                              color: blue.withValues(alpha: 0.25),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+
+                        child: ElevatedButton(
+                          onPressed: _start,
+
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            shadowColor: Colors.transparent,
+
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+
+                              Text(
+                                'شروع کنید',
+                                textDirection: TextDirection.rtl,
+
+                                style: _style(
+                                  17,
+                                  Colors.white,
+                                  FontWeight.w700,
+                                ),
+                              ),
+
+                            
                             ],
                           ),
                         ),
                       ),
-
-                      const SizedBox(height: 25),
-
-                      Text(
-                        'صنف‌ها، اعضا و ارزیابی‌ها را به آسانی '
-                        'مدیریت کنید و نتایج را به صورت فایل '
-                        'Excel دریافت کنید.',
-
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
-
-                        style: _style(
-                          screenWidth * 0.038,
-                          const Color(0xFF596B91),
-                          FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const Spacer(flex: 2),
-
-              // دکمه شروع
-              FadeTransition(
-                opacity: _fade,
-
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 60,
-
-                  child: ElevatedButton(
-                    onPressed: _start,
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: blue,
-                      foregroundColor: Colors.white,
-                      elevation: 8,
-
-                      shadowColor: blue.withValues(alpha: 0.28),
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-
-                    child: Align(
-                      alignment: Alignment.center,
-
-                      child: Text(
-                        'شروع کنید',
-                        textDirection: TextDirection.rtl,
-
-                        style: _style(
-                          17,
-                          Colors.white,
-                          FontWeight.w700,
-                        ),
-                      ),
                     ),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 30),
-            ],
-          ),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
