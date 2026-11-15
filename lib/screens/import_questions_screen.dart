@@ -1,11 +1,11 @@
-
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:excel_plus/excel_plus.dart' hide Border;
+//import 'package:excel_plus/excel_plus.dart' hide Border;
+import 'package:excel_plus/excel_plus.dart' hide Border, TextSpan;
 import 'package:path_provider/path_provider.dart';
 
 import '../database/isar_service.dart';
@@ -27,12 +27,12 @@ class QuestionBank {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'storedName': storedName,
-        'questionCount': questionCount,
-        'createdAt': createdAt,
-      };
+    'id': id,
+    'name': name,
+    'storedName': storedName,
+    'questionCount': questionCount,
+    'createdAt': createdAt,
+  };
 
   factory QuestionBank.fromJson(Map<String, dynamic> json) {
     return QuestionBank(
@@ -49,8 +49,7 @@ class ImportQuestionsScreen extends StatefulWidget {
   const ImportQuestionsScreen({super.key});
 
   @override
-  State<ImportQuestionsScreen> createState() =>
-      _ImportQuestionsScreenState();
+  State<ImportQuestionsScreen> createState() => _ImportQuestionsScreenState();
 }
 
 class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
@@ -82,28 +81,26 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
   }
 
   TextStyle get titleStyle => GoogleFonts.vazirmatn(
-        fontSize: 15,
-        fontWeight: FontWeight.bold,
-        color: navyColor,
-      );
+    fontSize: 15,
+    fontWeight: FontWeight.bold,
+    color: navyColor,
+  );
 
-  TextStyle get normalStyle => GoogleFonts.vazirmatn(
-        fontSize: 12,
-        color: const Color(0xFF64748B),
-      );
+  TextStyle get normalStyle =>
+      GoogleFonts.vazirmatn(fontSize: 12, color: const Color(0xFF64748B));
 
   BoxDecoration get cardDecoration => BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: navyColor.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      );
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(color: borderColor),
+    boxShadow: [
+      BoxShadow(
+        color: navyColor.withValues(alpha: 0.035),
+        blurRadius: 14,
+        offset: const Offset(0, 5),
+      ),
+    ],
+  );
 
   QuestionBank? get selectedBank {
     for (final bank in banks) {
@@ -122,9 +119,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
   Future<Directory> getBankDirectory() async {
     final appDirectory = await getApplicationDocumentsDirectory();
 
-    final directory = Directory(
-      '${appDirectory.path}/$folderName',
-    );
+    final directory = Directory('${appDirectory.path}/$folderName');
 
     if (!await directory.exists()) {
       await directory.create(recursive: true);
@@ -153,10 +148,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
 
     final jsonData = banks.map((bank) => bank.toJson()).toList();
 
-    await file.writeAsString(
-      jsonEncode(jsonData),
-      flush: true,
-    );
+    await file.writeAsString(jsonEncode(jsonData), flush: true);
   }
 
   // LOAD FILES
@@ -176,9 +168,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
           final decoded = jsonDecode(content) as List;
 
           banks = decoded.map((item) {
-            return QuestionBank.fromJson(
-              Map<String, dynamic>.from(item),
-            );
+            return QuestionBank.fromJson(Map<String, dynamic>.from(item));
           }).toList();
         }
       }
@@ -210,8 +200,8 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
 
       if (selectedBankId == null ||
           !banks.any((bank) => bank.id == selectedBankId)) {
-        selectedBankId = activeBankId ??
-            (banks.isNotEmpty ? banks.first.id : null);
+        selectedBankId =
+            activeBankId ?? (banks.isNotEmpty ? banks.first.id : null);
       }
 
       await saveManifest();
@@ -251,13 +241,16 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
       throw Exception('صفحه Excel پیدا نشد.');
     }
 
-    final rows = sheet.rows.map((row) {
-      return row.map((cell) {
-        return cell?.value?.toString() ?? '';
-      }).toList();
-    }).where((row) {
-      return row.any((cell) => cell.trim().isNotEmpty);
-    }).toList();
+    final rows = sheet.rows
+        .map((row) {
+          return row.map((cell) {
+            return cell?.value?.toString() ?? '';
+          }).toList();
+        })
+        .where((row) {
+          return row.any((cell) => cell.trim().isNotEmpty);
+        })
+        .toList();
 
     if (rows.isEmpty) {
       throw Exception('هیچ اطلاعاتی در فایل Excel وجود ندارد.');
@@ -300,85 +293,34 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
         .replaceAll(RegExp(r'\s+'), ' ');
   }
 
-  String normalizeType(String value) {
-    final type = normalizeHeader(value);
-
-    switch (type) {
-      case 'choice':
-      case 'multiple choice':
-      case 'چندگزینه‌ای':
-      case 'چند گزینه‌ای':
-      case 'چندگزینه ای':
-      case 'چند گزینه ای':
-        return 'choice';
-
-      case 'number':
-      case 'عدد':
-      case 'عددی':
-        return 'number';
-
-      case 'text':
-      case 'تشریحی':
-        return 'text';
-
-      case 'project':
-      case 'پروژه':
-        return 'project';
-
-      default:
-        return '';
-    }
-  }
-
   // PARSE QUESTIONS
 
   List<QuestionModel> parseQuestions(List<List<String>> rows) {
     if (rows.length < 2) {
-      throw Exception(
-        'فایل باید عنوان ستون‌ها و حداقل یک سوال داشته باشد.',
-      );
+      throw Exception('فایل باید عنوان ستون‌ها و حداقل یک سوال داشته باشد.');
     }
 
     final headers = rows.first.map(normalizeHeader).toList();
 
-    int findColumn(List<String> names) {
-      return headers.indexWhere((header) => names.contains(header));
+    final questionIndex = headers.indexWhere(
+      (header) => ['question', 'سوال', 'سؤال'].contains(header),
+    );
+
+    final correctIndex = headers.indexWhere(
+      (header) => [
+        'correct answer',
+        'correctanswer',
+        'پاسخ درست',
+        'پاسخ صحیح',
+      ].contains(header),
+    );
+
+    if (questionIndex == -1) {
+      throw Exception('ستون Question یا سوال پیدا نشد.');
     }
 
-    final questionIndex = findColumn([
-      'question',
-      'سوال',
-      'سؤال',
-    ]);
-
-    final typeIndex = findColumn([
-      'type',
-      'نوع',
-      'نوع سوال',
-      'نوع سؤال',
-    ]);
-
-    final correctIndex = findColumn([
-      'correct answer',
-      'correctanswer',
-      'پاسخ درست',
-      'پاسخ صحیح',
-    ]);
-
-    if (questionIndex == -1 || typeIndex == -1) {
-      throw Exception('ستون سوال یا نوع سوال در فایل پیدا نشد.');
-    }
-
-    final optionColumns = <int>[];
-
-    for (int i = 0; i < headers.length; i++) {
-      final header = headers[i];
-
-      if (RegExp(
-        r'^(option\s*[a-z0-9]+|گزینه\s*[a-z0-9]+)$',
-      ).hasMatch(header)) {
-        optionColumns.add(i);
-      }
+    if (correctIndex == -1) {
+      throw Exception('ستون CorrectAnswer یا پاسخ درست پیدا نشد.');
     }
 
     String getCell(List<String> row, int index) {
@@ -392,63 +334,24 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
       final row = rows[i];
 
       final questionText = getCell(row, questionIndex);
-      final type = normalizeType(getCell(row, typeIndex));
+      final correctAnswer = getCell(row, correctIndex);
 
-      if (questionText.isEmpty) continue;
-
-      if (type.isEmpty) {
-        throw Exception('نوع سوال در ردیف ${i + 1} معتبر نیست.');
+      if (questionText.isEmpty && correctAnswer.isEmpty) {
+        continue;
       }
 
-      final options = <String>[];
-
-      for (final column in optionColumns) {
-        final value = getCell(row, column);
-
-        if (value.isNotEmpty) {
-          options.add(value);
-        }
+      if (questionText.isEmpty) {
+        throw Exception('متن سوال در ردیف ${i + 1} خالی است.');
       }
 
-      if (type == 'choice' && options.length < 2) {
-        throw Exception(
-          'سوال چندگزینه‌ای در ردیف ${i + 1} حداقل دو گزینه نیاز دارد.',
-        );
-      }
-
-      if (type == 'project' && options.isEmpty) {
-        options.addAll(['بلی', 'خیر']);
-      }
-
-      String? correctAnswer;
-
-      final correctValue = getCell(row, correctIndex);
-
-      if (correctValue.isNotEmpty) {
-        final upper = correctValue.toUpperCase();
-
-        final letterIndex = upper.length == 1
-            ? upper.codeUnitAt(0) - 65
-            : -1;
-
-        final isSingleLetter =
-            letterIndex >= 0 && letterIndex < options.length;
-
-        if (isSingleLetter) {
-          correctAnswer = options[letterIndex];
-        } else if (options.contains(correctValue)) {
-          correctAnswer = correctValue;
-        } else {
-          throw Exception(
-            'پاسخ صحیح در ردیف ${i + 1} معتبر نیست: $correctValue',
-          );
-        }
+      if (correctAnswer.isEmpty) {
+        throw Exception('پاسخ سوال در ردیف ${i + 1} خالی است.');
       }
 
       final question = QuestionModel()
         ..question = questionText
-        ..type = type
-        ..options = options
+        ..type = 'text'
+        ..options = []
         ..correctAnswer = correctAnswer;
 
       importedQuestions.add(question);
@@ -560,10 +463,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
 
       final activeFile = await getActiveFile();
 
-      await activeFile.writeAsString(
-        bank.id,
-        flush: true,
-      );
+      await activeFile.writeAsString(bank.id, flush: true);
 
       if (!mounted) return;
 
@@ -646,11 +546,6 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
     }
   }
 
-  // DELETE FILE
-
-  // DELETE FILE
-
- 
   // DELETE FILE
 
   Future<void> deleteBank(QuestionBank bank) async {
@@ -757,7 +652,6 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
 
                   Row(
                     children: [
-                      // دکمه انصراف
                       Expanded(
                         child: SizedBox(
                           height: 46,
@@ -767,9 +661,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: navyColor,
-                              side: const BorderSide(
-                                color: borderColor,
-                              ),
+                              side: const BorderSide(color: borderColor),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -787,7 +679,6 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                       ),
                       const SizedBox(width: 12),
 
-                      // دکمه حذف: متن راست، آیکون چپ
                       Expanded(
                         child: SizedBox(
                           height: 46,
@@ -865,8 +756,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
       banks.removeWhere((item) => item.id == bank.id);
 
       if (selectedBankId == bank.id) {
-        selectedBankId =
-            banks.isNotEmpty ? banks.first.id : null;
+        selectedBankId = banks.isNotEmpty ? banks.first.id : null;
       }
 
       await saveManifest();
@@ -891,7 +781,6 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
       showMessage('خطا در حذف فایل: $e');
     }
   }
-
 
   // MESSAGE
 
@@ -975,9 +864,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           foregroundColor: color,
-          side: BorderSide(
-            color: color.withValues(alpha: 0.25),
-          ),
+          side: BorderSide(color: color.withValues(alpha: 0.25)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -1063,24 +950,15 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    Text(
-                      '${bank.questionCount} سوال',
-                      style: normalStyle,
-                    ),
+                    Text('${bank.questionCount} سوال', style: normalStyle),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               if (isActive)
-                _statusBadge(
-                  text: 'فعال',
-                  color: successColor,
-                )
+                _statusBadge(text: 'فعال', color: successColor)
               else if (isSelected)
-                _statusBadge(
-                  text: 'انتخاب‌شده',
-                  color: primaryColor,
-                )
+                _statusBadge(text: 'انتخاب‌شده', color: primaryColor)
               else
                 Icon(
                   Icons.radio_button_off_rounded,
@@ -1091,7 +969,6 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
 
           const SizedBox(height: 14),
 
-          // RIGHT: ACTIVATE | LEFT: DELETE
           Row(
             children: [
               Expanded(
@@ -1099,9 +976,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                   text: isActive ? 'انتخاب شده' : 'انتخاب کردن',
                   icon: Icons.check_box_rounded,
                   color: successColor,
-                  onPressed: isLoading
-                      ? null
-                      : () => selectBank(bank),
+                  onPressed: isLoading ? null : () => selectBank(bank),
                 ),
               ),
               const SizedBox(width: 12),
@@ -1110,9 +985,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                   text: 'حذف',
                   icon: Icons.delete_outline_rounded,
                   color: dangerColor,
-                  onPressed: isLoading
-                      ? null
-                      : () => deleteBank(bank),
+                  onPressed: isLoading ? null : () => deleteBank(bank),
                 ),
               ),
             ],
@@ -1124,15 +997,9 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
 
   // STATUS BADGE
 
-  Widget _statusBadge({
-    required String text,
-    required Color color,
-  }) {
+  Widget _statusBadge({required String text, required Color color}) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(20),
@@ -1155,111 +1022,102 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
       return const SizedBox.shrink();
     }
 
-    final maxColumns = excelRows
-        .map((row) => row.length)
-        .reduce((a, b) => a > b ? a : b);
+    final headers = excelRows.first.map(normalizeHeader).toList();
+
+    final questionIndex = headers.indexWhere(
+      (header) => ['question', 'سوال', 'سؤال'].contains(header),
+    );
+
+    final answerIndex = headers.indexWhere(
+      (header) => [
+        'correct answer',
+        'correctanswer',
+        'پاسخ درست',
+        'پاسخ صحیح',
+      ].contains(header),
+    );
+
+    if (questionIndex == -1 || answerIndex == -1) {
+      return const SizedBox.shrink();
+    }
+
+    String getCell(List<String> row, int index) {
+      if (index < 0 || index >= row.length) return '';
+      return row[index].trim();
+    }
+
+    final questionRows = excelRows.skip(1).where((row) {
+      return getCell(row, questionIndex).isNotEmpty;
+    }).toList();
 
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(12),
       decoration: cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.table_chart_rounded,
-                color: primaryColor,
-                size: 22,
-              ),
-              const SizedBox(width: 9),
+              const Icon(Icons.quiz_rounded, color: primaryColor, size: 21),
+              const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  'سوالات فایل انتخاب‌شده',
-                  style: titleStyle,
-                ),
+                child: Text('سوالات فایل انتخاب‌شده', style: titleStyle),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${excelRows.length - 1} سوال',
-                  style: GoogleFonts.vazirmatn(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
-                  ),
+              Text(
+                '${questionRows.length} سوال',
+                style: GoogleFonts.vazirmatn(
+                  fontSize: 10,
+                  color: primaryColor,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 8),
-          Text(
-            'محتویات فایل Excel',
-            style: normalStyle,
-          ),
-          const SizedBox(height: 13),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(11),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                horizontalMargin: 12,
-                columnSpacing: 20,
-                headingRowHeight: 45,
-                dataRowMinHeight: 44,
-                dataRowMaxHeight: 68,
-                headingRowColor: WidgetStateProperty.all(
-                  const Color(0xFFEAF1FC),
-                ),
-                border: TableBorder.all(color: borderColor),
-                columns: List.generate(
-                  maxColumns,
-                  (index) => DataColumn(
-                    label: Text(
-                      excelRows.first.length > index
-                          ? excelRows.first[index]
-                          : 'ستون ${index + 1}',
+
+          ...List.generate(questionRows.length, (index) {
+            final row = questionRows[index];
+
+            final question = getCell(row, questionIndex);
+            final answer = getCell(row, answerIndex);
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '${index + 1}. $question',
                       style: GoogleFonts.vazirmatn(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                         color: navyColor,
                       ),
                     ),
-                  ),
-                ),
-                rows: excelRows.skip(1).map((row) {
-                  return DataRow(
-                    cells: List.generate(
-                      maxColumns,
-                      (index) => DataCell(
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: 180,
-                          ),
-                          child: Text(
-                            index < row.length ? row[index] : '',
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.vazirmatn(
-                              fontSize: 10,
-                              color: const Color(0xFF475569),
-                            ),
-                          ),
-                        ),
+                    TextSpan(
+                      text: ' ـ ',
+                      style: GoogleFonts.vazirmatn(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
                       ),
                     ),
-                  );
-                }).toList(),
+                    TextSpan(
+                      text: answer,
+                      style: GoogleFonts.vazirmatn(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: successColor,
+                      ),
+                    ),
+                  ],
+                ),
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.right,
               ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
@@ -1276,14 +1134,12 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: backgroundColor,
-
         appBar: AppBar(
           backgroundColor: backgroundColor,
           elevation: 0,
           centerTitle: true,
           iconTheme: const IconThemeData(color: navyColor),
         ),
-
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 25),
@@ -1292,61 +1148,52 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
               children: [
                 // ADD EXCEL FILE
 
-               Container(
-  padding: const EdgeInsets.all(18),
-  decoration: cardDecoration,
-  child: Column(
-    children: [
-      Image.asset(
-        'assets/images/a_clean_modern_high_resolution_vector_3d_style_e.png',
-        height: 115,
-        fit: BoxFit.contain,
-      ),
-
-      const SizedBox(height: 12),
-
-      Text(
-        'وارد کردن سوالات امتحان',
-        style: titleStyle,
-        textAlign: TextAlign.center,
-      ),
-
-      const SizedBox(height: 10),
-
-      Text(
-        'فایل اکسل شامل سوالات امتحان را برای وارد کردن به برنامه انتخاب کنید.',
-        textAlign: TextAlign.center,
-        style: normalStyle,
-      ),
-
-      const SizedBox(height: 6),
-
-      Text(
-        'فرمت قابل قبول فایل: Excel با پسوند .xlsx',
-        textAlign: TextAlign.center,
-        style: GoogleFonts.vazirmatn(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: primaryColor,
-        ),
-      ),
-
-      const SizedBox(height: 17),
-
-      actionButton(
-        text: 'انتخاب فایل اکسل',
-        icon: Icons.folder_open_rounded,
-        color: primaryColor,
-        onPressed: isLoading ? null : pickExcelFile,
-      ),
-    ],
-  ),
-),
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: cardDecoration,
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/a_clean_modern_high_resolution_vector_3d_style_e.png',
+                        height: 115,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'وارد کردن سوالات امتحان',
+                        style: titleStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'فایل اکسل شامل سوالات امتحان را برای وارد کردن به برنامه انتخاب کنید.',
+                        textAlign: TextAlign.center,
+                        style: normalStyle,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'فرمت قابل قبول فایل: Excel با پسوند .xlsx',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.vazirmatn(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 17),
+                      actionButton(
+                        text: 'انتخاب فایل اکسل',
+                        icon: Icons.folder_open_rounded,
+                        color: primaryColor,
+                        onPressed: isLoading ? null : pickExcelFile,
+                      ),
+                    ],
+                  ),
+                ),
 
                 const SizedBox(height: 20),
 
                 // ACTIVE FILE
-
                 if (currentActiveBank != null) ...[
                   Container(
                     padding: const EdgeInsets.all(15),
@@ -1399,13 +1246,9 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                 ],
 
                 // FILE LIST TITLE
-
                 Row(
                   children: [
-                    Text(
-                      'فهرست فایل‌های سوالات',
-                      style: titleStyle,
-                    ),
+                    Text('فهرست فایل‌های سوالات', style: titleStyle),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -1434,14 +1277,11 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: Center(
-                      child: CircularProgressIndicator(
-                        color: primaryColor,
-                      ),
+                      child: CircularProgressIndicator(color: primaryColor),
                     ),
                   ),
 
                 // EMPTY STATE
-
                 if (banks.isEmpty && !isLoading)
                   Container(
                     padding: const EdgeInsets.all(25),
@@ -1454,10 +1294,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                           color: Colors.grey.shade400,
                         ),
                         const SizedBox(height: 12),
-                        Text(
-                          'هنوز فایلی وارد نشده است.',
-                          style: titleStyle,
-                        ),
+                        Text('هنوز فایلی وارد نشده است.', style: titleStyle),
                         const SizedBox(height: 5),
                         Text(
                           'برای شروع، یک فایل Excel انتخاب کنید.',
@@ -1468,11 +1305,9 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                   ),
 
                 // FILE CARDS
-
                 if (!isLoading) ...banks.map(buildBankCard),
 
                 // SHOW / HIDE QUESTIONS
-
                 if (bank != null && !isLoading) ...[
                   const SizedBox(height: 5),
                   actionButton(
@@ -1488,9 +1323,8 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                 ],
 
                 // PREVIEW
-
                 if (showPreview && !isLoading) ...[
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 10),
                   buildPreview(),
                 ],
               ],

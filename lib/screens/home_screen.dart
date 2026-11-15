@@ -5,7 +5,7 @@ import 'import_questions_screen.dart';
 import 'class_list_screen.dart';
 import 'class_management_screen.dart';
 import 'excel_files_screen.dart';
-
+import 'question_import_guide_screen.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -65,18 +65,18 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {});
   }
 // باز کردن صفحه وارد کردن سوالات
+// باز کردن راهنمای وارد کردن سوالات
 Future<void> openQuestions() async {
   await Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) => const ImportQuestionsScreen(),
+      builder: (_) => const QuestionImportGuideScreen(),
     ),
   );
 
   if (!mounted) return;
   setState(() {});
 }
-
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
