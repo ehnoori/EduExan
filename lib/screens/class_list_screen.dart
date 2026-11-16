@@ -7,9 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import '../database/isar_service.dart';
 import '../models/class_model.dart';
 import 'evaluation_screen.dart';
-// ✅ این ایمپورت را حتماً اضافه کنید
+import 'class_management_screen.dart';
 import '../services/excel_export_service.dart';
-
 
 class ClassListScreen extends StatefulWidget {
   const ClassListScreen({super.key});
@@ -24,10 +23,8 @@ class _ClassListScreenState extends State<ClassListScreen> {
 
   final Set<int> expandedClasses = {};
 
-  /// شاگردانی که امتحان داده‌اند
   final Map<int, Set<String>> evaluatedStudentsByClass = {};
 
-  /// صنف‌هایی که در حال ساخت Excel هستند
   final Set<int> exportingClasses = {};
 
   @override
@@ -36,10 +33,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
     _loadClasses();
   }
 
-  // ============================================================
   // LOAD CLASSES
-  // ============================================================
-
   Future<void> _loadClasses() async {
     try {
       final result = await IsarService.getAllClasses();
@@ -70,20 +64,28 @@ class _ClassListScreenState extends State<ClassListScreen> {
     }
   }
 
-  // ============================================================
-  // LOAD ALL EVALUATION STATUS
-  // ============================================================
+  // EDIT CLASS
+  Future<void> _editClass(ClassModel classModel) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ClassManagementScreen(classModel: classModel),
+      ),
+    );
 
+    if (result == true && mounted) {
+      await _loadClasses();
+    }
+  }
+
+  // LOAD ALL EVALUATION STATUS
   Future<void> _loadAllEvaluationStatuses() async {
     for (final classModel in classes) {
       await _loadEvaluationStatus(classModel.id);
     }
   }
 
-  // ============================================================
   // LOAD EVALUATION STATUS FOR ONE CLASS
-  // ============================================================
-
   Future<void> _loadEvaluationStatus(int classId) async {
     try {
       final evaluations = await IsarService.getClassEvaluations(classId);
@@ -103,18 +105,12 @@ class _ClassListScreenState extends State<ClassListScreen> {
     }
   }
 
-  // ============================================================
   // REFRESH
-  // ============================================================
-
   Future<void> _refreshClasses() async {
     await _loadClasses();
   }
 
-  // ============================================================
   // TOGGLE MEMBERS
-  // ============================================================
-
   void _toggleMembers(int classId) {
     setState(() {
       if (expandedClasses.contains(classId)) {
@@ -125,10 +121,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
     });
   }
 
-  // ============================================================
   // CHECK STUDENT EVALUATED
-  // ============================================================
-
   bool _isStudentEvaluated(int classId, String studentName) {
     final students = evaluatedStudentsByClass[classId];
 
@@ -139,17 +132,13 @@ class _ClassListScreenState extends State<ClassListScreen> {
     return students.contains(studentName.trim());
   }
 
-  // ============================================================
   // CONFIRM START EVALUATION
-  // ============================================================
-
   Future<void> _confirmStartEvaluation({
     required ClassModel classModel,
     required String studentName,
   }) async {
     final cleanName = studentName.trim();
 
-    // اگر قبلاً امتحان داده باشد، هیچ کاری نکن
     if (_isStudentEvaluated(classModel.id, cleanName)) {
       return;
     }
@@ -229,18 +218,13 @@ class _ClassListScreenState extends State<ClassListScreen> {
       ),
     );
 
-    // اگر ارزیابی با موفقیت ذخیره شد
     if (result == true) {
       await _loadEvaluationStatus(classModel.id);
     }
   }
 
-  // ============================================================
-  // EXPORT TO EXCEL (اصلاح شده)
-  // ============================================================
-
+  // EXPORT TO EXCEL
   Future<void> _exportToExcel(ClassModel classModel) async {
-    // جلوگیری از چند بار کلیک
     if (exportingClasses.contains(classModel.id)) {
       return;
     }
@@ -261,7 +245,6 @@ class _ClassListScreenState extends State<ClassListScreen> {
       return;
     }
 
-    // تازه‌سازی وضعیت شاگردان
     await _loadEvaluationStatus(classModel.id);
 
     if (!mounted) return;
@@ -271,24 +254,16 @@ class _ClassListScreenState extends State<ClassListScreen> {
     });
 
     try {
-      // ========================================================
-      // GET ALL EVALUATIONS
-      // ========================================================
       final evaluations = await IsarService.getClassEvaluations(classModel.id);
 
       if (evaluations.isEmpty) {
         throw Exception('هنوز هیچ نتیجه‌ای برای این صنف ثبت نشده است.');
       }
 
-      // ✅ فراخوانی سرویس اکسل (که خودش داده‌ها را فیلتر و بدون تکرار می‌سازد)
-      final file = await ExcelExportService.export(
+      await ExcelExportService.export(
         classModel: classModel,
         evaluations: evaluations,
       );
-
-      // ========================================================
-      // SUCCESS
-      // ========================================================
 
       if (!mounted) return;
 
@@ -326,10 +301,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
     }
   }
 
-  // ============================================================
   // FORMAT DATE
-  // ============================================================
-
   String _formatDateTime(DateTime dateTime) {
     String twoDigits(int value) {
       return value.toString().padLeft(2, '0');
@@ -342,10 +314,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
         '${twoDigits(dateTime.minute)}';
   }
 
-  // ============================================================
   // SAFE FILE NAME
-  // ============================================================
-
   String _safeFileName(String value) {
     return value
         .trim()
@@ -353,10 +322,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
         .replaceAll(RegExp(r'\s+'), ' ');
   }
 
-  // ============================================================
   // DELETE SHEET
-  // ============================================================
-
   void _showDeleteSheet() {
     if (classes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -395,9 +361,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-
                   const SizedBox(height: 18),
-
                   Text(
                     'حذف صنف',
                     textDirection: TextDirection.rtl,
@@ -407,9 +371,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
                       color: const Color(0xFF26364D),
                     ),
                   ),
-
                   const SizedBox(height: 14),
-
                   ...classes.map((classModel) {
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
@@ -428,7 +390,6 @@ class _ClassListScreenState extends State<ClassListScreen> {
                       ),
                       onTap: () {
                         Navigator.pop(context);
-
                         _confirmDeleteClass(classModel);
                       },
                     );
@@ -442,73 +403,93 @@ class _ClassListScreenState extends State<ClassListScreen> {
     );
   }
 
-  // ============================================================
   // CONFIRM DELETE
-  // ============================================================
-
   Future<void> _confirmDeleteClass(ClassModel classModel) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          title: Text(
-            'حذف صنف',
-            textDirection: TextDirection.rtl,
-            textAlign: TextAlign.right,
-            style: GoogleFonts.vazirmatn(fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'آیا مطمئن هستید که صنف «${classModel.className}» حذف شود؟',
-            textDirection: TextDirection.rtl,
-            textAlign: TextAlign.right,
-            style: GoogleFonts.vazirmatn(fontSize: 14),
-          ),
-          actionsAlignment: MainAxisAlignment.start,
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
-              child: Text('لغو', style: GoogleFonts.vazirmatn()),
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE53935),
-                foregroundColor: Colors.white,
-                elevation: 0,
-              ),
-              child: Text(
-                'حذف',
-                style: GoogleFonts.vazirmatn(fontWeight: FontWeight.bold),
+            title: Text(
+              'حذف صنف',
+              textAlign: TextAlign.right,
+              style: GoogleFonts.vazirmatn(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ],
+            content: Text(
+              'آیا مطمئن هستید که صنف «${classModel.className}» حذف شود؟',
+              textAlign: TextAlign.right,
+              style: GoogleFonts.vazirmatn(
+                fontSize: 14,
+                color: const Color(0xFF7A8797),
+                height: 1.7,
+              ),
+            ),
+
+            actions: [
+              // انصراف - سمت راست
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext, false);
+                },
+                child: Text(
+                  'انصراف',
+                  style: GoogleFonts.vazirmatn(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF7A8797),
+                  ),
+                ),
+              ),
+
+              // حذف - سمت چپ
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext, true);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'حذف',
+                  style: GoogleFonts.vazirmatn(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
 
-    if (confirmed != true) {
-      return;
-    }
+    if (confirmed != true) return;
+
+    // ادامه کد حذف صنف فعلی‌ات را از اینجا نگه دار.
 
     try {
       final isar = await IsarService.getInstance();
 
-      // حذف تمام ارزیابی‌های صنف
       await IsarService.deleteClassEvaluations(classModel.id);
 
-      // حذف خود صنف
       await isar.writeTxn(() async {
         await isar.classModels.delete(classModel.id);
       });
 
-      // حذف فایل Excel مربوط به صنف
       try {
         final directory = await getApplicationDocumentsDirectory();
 
@@ -529,7 +510,6 @@ class _ClassListScreenState extends State<ClassListScreen> {
         classes.removeWhere((item) => item.id == classModel.id);
 
         evaluatedStudentsByClass.remove(classModel.id);
-
         expandedClasses.remove(classModel.id);
       });
 
@@ -557,10 +537,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
     }
   }
 
-  // ============================================================
   // BUILD
-  // ============================================================
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -569,7 +546,6 @@ class _ClassListScreenState extends State<ClassListScreen> {
         backgroundColor: const Color(0xFFF3F7FC),
         elevation: 0,
         centerTitle: true,
-
         title: Text(
           'لیست صنوف',
           style: GoogleFonts.vazirmatn(
@@ -578,18 +554,14 @@ class _ClassListScreenState extends State<ClassListScreen> {
             color: const Color(0xFF26364D),
           ),
         ),
-
-        // آیکون سه‌نقطه در سمت چپ
         leading: IconButton(
           icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF26364D)),
           onPressed: _showDeleteSheet,
         ),
-
-        // دکمه برگشت در سمت راست
         actions: [
           IconButton(
             icon: const Icon(
-            Icons.arrow_forward_ios_rounded,
+              Icons.arrow_forward_ios_rounded,
               size: 20,
               color: Color(0xFF26364D),
             ),
@@ -632,7 +604,6 @@ class _ClassListScreenState extends State<ClassListScreen> {
                 itemCount: classes.length,
                 itemBuilder: (context, index) {
                   final classModel = classes[index];
-
                   return _buildClassCard(classModel);
                 },
               ),
@@ -640,10 +611,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
     );
   }
 
-  // ============================================================
   // CLASS CARD
-  // ============================================================
-
   Widget _buildClassCard(ClassModel classModel) {
     final isExpanded = expandedClasses.contains(classModel.id);
 
@@ -670,10 +638,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
         padding: const EdgeInsets.all(14),
         child: Column(
           children: [
-            // ==================================================
             // CLASS INFORMATION
-            // ==================================================
-
             Row(
               textDirection: TextDirection.rtl,
               children: [
@@ -695,15 +660,35 @@ class _ClassListScreenState extends State<ClassListScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        classModel.className,
+                      Row(
                         textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.right,
-                        style: GoogleFonts.vazirmatn(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF26364D),
-                        ),
+                        children: [
+                          Expanded(
+                            child: Text(
+                              classModel.className,
+                              textDirection: TextDirection.rtl,
+                              textAlign: TextAlign.right,
+                              style: GoogleFonts.vazirmatn(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF26364D),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'ویرایش مشخصات صنف',
+                            onPressed: () {
+                              _editClass(classModel);
+                            },
+                            icon: const Icon(
+                              Icons.edit_rounded,
+                              size: 20,
+                              color: Color(0xFF6C5CE7),
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -733,9 +718,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
 
             const SizedBox(height: 12),
 
-            // ==================================================
             // MEMBERS BUTTON
-            // ==================================================
             InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () {
@@ -791,9 +774,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
               ),
             ),
 
-            // ==================================================
             // MEMBERS LIST
-            // ==================================================
             if (isExpanded) ...[
               const SizedBox(height: 10),
 
@@ -801,9 +782,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
 
               const SizedBox(height: 6),
 
-              // ==================================================
               // EXPORT BUTTON
-              // ==================================================
               SizedBox(
                 width: double.infinity,
                 height: 46,
@@ -849,10 +828,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
     );
   }
 
-  // ============================================================
   // MEMBERS LIST
-  // ============================================================
-
   List<Widget> _buildMembersList(
     ClassModel classModel,
     Set<String> evaluatedStudents,
@@ -901,9 +877,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(width: 10),
-
               Expanded(
                 child: Text(
                   student,
@@ -916,10 +890,6 @@ class _ClassListScreenState extends State<ClassListScreen> {
                   ),
                 ),
               ),
-
-              // ==================================================
-              // GREEN CHECKBOX FOR COMPLETED STUDENTS
-              // ==================================================
               Checkbox(
                 value: isEvaluated,
                 activeColor: const Color(0xFF43A047),

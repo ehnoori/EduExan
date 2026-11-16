@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
 
   List<String?> answers = [];
 
-  /// نسخه سؤال‌های ثابت این صنف
+  /// نسخه سوالاتی که شاگرد در همین ارزیابی دریافت می‌کند.
   List<Map<String, dynamic>> examQuestions = [];
 
   final TextEditingController textController = TextEditingController();
@@ -92,7 +93,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
   }
 
   // =====================================================
-  // LOAD QUESTIONS FOR THIS CLASS
+  // LOAD QUESTIONS
   // =====================================================
 
   Future<void> loadExamQuestions() async {
@@ -103,7 +104,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
         throw Exception('نام شاگرد معتبر نیست.');
       }
 
-      // ابتدا بررسی می‌کنیم این شاگرد قبلاً امتحان داده است یا خیر.
+      // بررسی می‌کنیم شاگرد قبلاً ارزیابی شده است یا خیر.
       final existingStudent = await IsarService.getStudentEvaluation(
         widget.classModel.id,
         cleanStudentName,
@@ -130,45 +131,24 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
         return;
       }
 
-      // تمام ارزیابی‌های قبلی همین صنف را دریافت می‌کنیم.
-      final classEvaluations = await IsarService.getClassEvaluations(
-        widget.classModel.id,
-      );
+      // هر شاگرد ارزیابی‌نشده، سوالات بانک فعال فعلی را دریافت می‌کند.
+      final databaseQuestions = await IsarService.getAllQuestions();
 
-      // اگر صنف قبلاً امتحان داده باشد، نسخه سؤال‌های همان امتحان استفاده می‌شود.
-      final savedSnapshots = classEvaluations
-          .where((evaluation) {
-            return evaluation.questionSnapshotJson.trim().isNotEmpty;
-          })
-          .toList()
-        ..sort((a, b) => a.evaluatedAt.compareTo(b.evaluatedAt));
-
-      List<Map<String, dynamic>> loadedQuestions;
-
-      if (savedSnapshots.isNotEmpty) {
-        loadedQuestions = decodeSnapshot(
-          savedSnapshots.first.questionSnapshotJson,
+      if (databaseQuestions.isEmpty) {
+        throw Exception(
+          'هیچ سوالی در برنامه وجود ندارد. ابتدا فایل Excel سوالات را وارد کنید.',
         );
-      } else {
-        // این صنف هنوز امتحان نداده است.
-        // بانک عمومی سؤال‌ها برای اولین بار استفاده می‌شود.
-        final databaseQuestions = await IsarService.getAllQuestions();
-
-        if (databaseQuestions.isEmpty) {
-          throw Exception(
-            'هیچ سوالی در برنامه وجود ندارد. ابتدا فایل Excel سوالات را وارد کنید.',
-          );
-        }
-
-        loadedQuestions = databaseQuestions
-            .map(questionToMap)
-            .toList();
       }
+
+      final loadedQuestions = databaseQuestions
+          .map(questionToMap)
+          .toList();
 
       if (loadedQuestions.isEmpty) {
         throw Exception('سوال معتبری برای این صنف پیدا نشد.');
       }
 
+      // بررسی اعتبار سوالات.
       for (final question in loadedQuestions) {
         final type = question['type']?.toString() ?? '';
         final questionText = question['question']?.toString() ?? '';
@@ -182,7 +162,9 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
           final options = question['options'] as List;
 
           if (options.length < 2) {
-            throw Exception('یک سوال چندگزینه‌ای کمتر از دو گزینه دارد.');
+            throw Exception(
+              'یک سوال چندگزینه‌ای کمتر از دو گزینه دارد.',
+            );
           }
         }
       }
@@ -384,7 +366,7 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
     });
 
     try {
-      // بررسی دوباره برای جلوگیری از ثبت تکراری.
+      // جلوگیری از ثبت ارزیابی تکراری.
       final existing = await IsarService.getStudentEvaluation(
         widget.classModel.id,
         cleanStudentName,
@@ -396,36 +378,8 @@ class _EvaluationScreenState extends State<EvaluationScreen> {
         );
       }
 
-      // بررسی می‌کنیم آیا شاگرد دیگری در این صنف قبلاً امتحان داده است.
-      final classEvaluations = await IsarService.getClassEvaluations(
-        widget.classModel.id,
-      );
-
-      final savedSnapshots = classEvaluations
-          .where((evaluation) {
-            return evaluation.questionSnapshotJson.trim().isNotEmpty;
-          })
-          .toList()
-        ..sort((a, b) => a.evaluatedAt.compareTo(b.evaluatedAt));
-
-      String snapshotJson;
-
-      if (savedSnapshots.isNotEmpty) {
-        // نسخه قبلی صنف را حفظ می‌کنیم.
-        snapshotJson = savedSnapshots.first.questionSnapshotJson;
-
-        // اطمینان از اینکه پاسخ‌ها با همان نسخه هستند.
-        final frozenQuestions = decodeSnapshot(snapshotJson);
-
-        if (frozenQuestions.length != answers.length) {
-          throw Exception(
-            'تعداد سوالات با نسخه ثابت این صنف مطابقت ندارد.',
-          );
-        }
-      } else {
-        // اولین شاگرد صنف است؛ نسخه فعلی سؤال‌ها را قفل می‌کنیم.
-        snapshotJson = encodeSnapshot(examQuestions);
-      }
+      // ذخیره نسخه مستقل سوالات همین ارزیابی.
+      final String snapshotJson = encodeSnapshot(examQuestions);
 
       final evaluation = EvaluationModel()
         ..classId = widget.classModel.id

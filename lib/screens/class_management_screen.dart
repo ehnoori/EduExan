@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,15 +8,19 @@ import '../models/class_model.dart';
 import 'student_selection_screen.dart';
 
 class ClassManagementScreen extends StatefulWidget {
-  const ClassManagementScreen({super.key});
+  final ClassModel? classModel;
+
+  const ClassManagementScreen({
+    super.key,
+    this.classModel,
+  });
 
   @override
   State<ClassManagementScreen> createState() =>
       _ClassManagementScreenState();
 }
 
-class _ClassManagementScreenState
-    extends State<ClassManagementScreen> {
+class _ClassManagementScreenState extends State<ClassManagementScreen> {
   // Controllers
   final TextEditingController classNameController =
       TextEditingController();
@@ -32,10 +37,36 @@ class _ClassManagementScreenState
   final TextEditingController memberController =
       TextEditingController();
 
+  final List<TextInputFormatter> timeFormatter = [
+    TimeInputFormatter(),
+  ];
+
   // Members
   final List<String> members = [];
 
   bool isSaving = false;
+
+  // Load existing class information for editing
+  @override
+  void initState() {
+    super.initState();
+
+    final existingClass = widget.classModel;
+
+    if (existingClass != null) {
+      classNameController.text = existingClass.className;
+      teacherController.text = existingClass.teacherName;
+
+      final timeParts = existingClass.classTime.split(' - ');
+
+      if (timeParts.length == 2) {
+        startTimeController.text = timeParts[0].trim();
+        endTimeController.text = timeParts[1].trim();
+      }
+
+      members.addAll(existingClass.members);
+    }
+  }
 
   @override
   void dispose() {
@@ -47,19 +78,17 @@ class _ClassManagementScreenState
     super.dispose();
   }
 
-  // Normalize names to detect duplicates
+  // Normalize names
   String _normalizeName(String name) {
-    return name
-        .trim()
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .toLowerCase();
+    return name.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
   }
 
   // Add member
   void addMember() {
-    final String memberName = memberController.text
-        .trim()
-        .replaceAll(RegExp(r'\s+'), ' ');
+    final String memberName = memberController.text.trim().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
 
     if (memberName.isEmpty) {
       _showMessage('لطفاً نام عضو را وارد کنید');
@@ -90,27 +119,30 @@ class _ClassManagementScreenState
     });
   }
 
-  // تبدیل رشته زمان به دقیقه (مثلاً "2:30" به 150 دقیقه)
+  // Convert time to minutes
   int? _parseTimeToMinutes(String timeStr) {
     if (timeStr.isEmpty) return null;
-    
-    // اگر کاربر مثلا 2.30 یا 2:30 وارد کرد، دو نقطه را جایگزین می‌کنیم
+
     final cleanStr = timeStr.replaceAll('.', ':');
     final parts = cleanStr.split(':');
 
     if (parts.length == 1) {
-      // اگر فقط ساعت وارد شد (مثلا 2)
       final hour = int.tryParse(parts[0]);
+
       if (hour == null) return null;
+
       return hour * 60;
     } else if (parts.length == 2) {
-      // اگر ساعت و دقیقه وارد شد (مثلا 2:30)
       final hour = int.tryParse(parts[0]);
       final minute = int.tryParse(parts[1]);
+
       if (hour == null || minute == null) return null;
-      if (minute < 0 || minute > 59) return null; // دقیقه نباید بیشتر از 59 باشد
+
+      if (minute < 0 || minute > 59) return null;
+
       return (hour * 60) + minute;
     }
+
     return null;
   }
 
@@ -123,59 +155,62 @@ class _ClassManagementScreenState
     final String startTime = startTimeController.text.trim();
     final String endTime = endTimeController.text.trim();
 
+    // Required: Class name
     if (className.isEmpty) {
       _showMessage('لطفاً نام صنف را وارد کنید');
       return;
     }
 
+    // Required: Teacher name
     if (teacherName.isEmpty) {
       _showMessage('لطفاً نام استاد را وارد کنید');
       return;
     }
 
-    if (startTime.isEmpty || endTime.isEmpty) {
-      _showMessage('لطفاً زمان شروع و ختم درس را وارد کنید');
-      return;
+    // Optional: Time fields
+    int? startMinutes;
+    int? endMinutes;
+
+    if (startTime.isNotEmpty) {
+      startMinutes = _parseTimeToMinutes(startTime);
+
+      if (startMinutes == null ||
+          startMinutes < 0 ||
+          startMinutes > 23 * 60 + 59) {
+        _showMessage('فرمت ساعت شروع اشتباه است');
+        return;
+      }
     }
 
-    // تبدیل زمان به دقیقه برای مقایسه دقیق
-    final int? startMinutes = _parseTimeToMinutes(startTime);
-    final int? endMinutes = _parseTimeToMinutes(endTime);
+    if (endTime.isNotEmpty) {
+      endMinutes = _parseTimeToMinutes(endTime);
 
-    if (startMinutes == null || endMinutes == null) {
-      _showMessage('فرمت زمان اشتباه است. مثال صحیح: 2:30 یا 14');
-      return;
+      if (endMinutes == null ||
+          endMinutes <= 0 ||
+          endMinutes > 24 * 60) {
+        _showMessage('فرمت ساعت ختم اشتباه است');
+        return;
+      }
     }
 
-    if (startMinutes < 0 || startMinutes > 23 * 60 + 59) {
-       _showMessage('ساعت شروع باید بین 0 تا 23:59 باشد');
-       return;
-    }
-    
-    if (endMinutes <= 0 || endMinutes > 24 * 60) {
-       _showMessage('ساعت ختم باید بین 0:01 تا 24:00 باشد');
-       return;
-    }
+    // // Compare only when both times are entered
+    // if (startMinutes != null &&
+    //     endMinutes != null &&
+    //     startMinutes >= endMinutes) {
+    //   _showMessage('زمان شروع باید قبل از زمان ختم باشد');
+    //   return;
+    // }
 
-    if (startMinutes >= endMinutes) {
-      _showMessage('زمان شروع باید قبل از زمان ختم باشد');
-      return;
-    }
+    // Optional time
+    final String classTime =
+        startTime.isEmpty && endTime.isEmpty
+            ? ''
+            : '$startTime - $endTime';
 
-    // Keep the existing ClassModel.classTime field.
-    final String classTime = '$startTime - $endTime';
+    // Members are optional
+    final normalizedMembers = members.map(_normalizeName).toList();
 
-    if (members.isEmpty) {
-      _showMessage('لطفاً حداقل یک عضو برای صنف اضافه کنید');
-      return;
-    }
-
-    // Check duplicate members
-    final normalizedMembers =
-        members.map(_normalizeName).toList();
-
-    if (normalizedMembers.toSet().length !=
-        normalizedMembers.length) {
+    if (normalizedMembers.toSet().length != normalizedMembers.length) {
       _showMessage('نام تکراری در فهرست شاگردان وجود دارد');
       return;
     }
@@ -185,7 +220,11 @@ class _ClassManagementScreenState
     });
 
     try {
-      final ClassModel newClass = ClassModel()
+      // Update existing class or create new class
+      final ClassModel classToSave =
+          widget.classModel ?? ClassModel();
+
+      classToSave
         ..className = className
         ..teacherName = teacherName
         ..classTime = classTime
@@ -194,10 +233,11 @@ class _ClassManagementScreenState
       final isar = await IsarService.getInstance();
 
       await isar.writeTxn(() async {
-        await isar.classModels.put(newClass);
+        await isar.classModels.put(classToSave);
       });
 
-      final savedClass = await isar.classModels.get(newClass.id);
+      final savedClass =
+          await isar.classModels.get(classToSave.id);
 
       if (savedClass == null) {
         throw Exception('صنف در دیتابیس ذخیره نشد');
@@ -205,6 +245,13 @@ class _ClassManagementScreenState
 
       if (!mounted) return;
 
+      // Editing mode
+      if (widget.classModel != null) {
+        Navigator.pop(context, true);
+        return;
+      }
+
+      // Creating mode
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -230,10 +277,7 @@ class _ClassManagementScreenState
   }
 
   // Show message
-  void _showMessage(
-    String message, {
-    bool success = false,
-  }) {
+  void _showMessage(String message, {bool success = false}) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context)
@@ -261,16 +305,31 @@ class _ClassManagementScreenState
   }
 
   // Label
-  Widget _label(String text) {
+  Widget _label(String text, {bool required = false}) {
     return Align(
       alignment: Alignment.centerRight,
-      child: Text(
-        text,
+      child: RichText(
         textDirection: TextDirection.rtl,
-        style: GoogleFonts.vazirmatn(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF263238),
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: text,
+              style: GoogleFonts.vazirmatn(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF263238),
+              ),
+            ),
+            if (required)
+              TextSpan(
+                text: ' *',
+                style: GoogleFonts.vazirmatn(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -338,20 +397,14 @@ class _ClassManagementScreenState
 
   // Start and end time fields
   Widget _timeFields() {
-    // ✅ تغییر در فرمت‌کننده‌ها: اجازه دادن به عدد و علامت دو نقطه
-    final timeFormatter = <TextInputFormatter>[
-      FilteringTextInputFormatter.allow(RegExp(r'[0-9:]')),
-      LengthLimitingTextInputFormatter(5), // حداکثر 5 کاراکتر مثل 24:59
-    ];
-
     return Row(
       children: [
         Expanded(
           child: _textField(
             controller: startTimeController,
-            hintText: 'شروع (2:30)',
+            hintText: 'شروع',
             icon: Icons.access_time_rounded,
-            keyboardType: TextInputType.datetime, // کیبورد دارای دو نقطه
+            keyboardType: TextInputType.number,
             inputFormatters: timeFormatter,
           ),
         ),
@@ -359,9 +412,9 @@ class _ClassManagementScreenState
         Expanded(
           child: _textField(
             controller: endTimeController,
-            hintText: 'ختم (4:30)',
+            hintText: 'ختم',
             icon: Icons.access_time_rounded,
-            keyboardType: TextInputType.datetime, // کیبورد دارای دو نقطه
+            keyboardType: TextInputType.number,
             inputFormatters: timeFormatter,
           ),
         ),
@@ -427,78 +480,74 @@ class _ClassManagementScreenState
     }
 
     return Column(
-      children: List.generate(
-        members.length,
-        (index) {
-          final String member = members[index];
+      children: List.generate(members.length, (index) {
+        final String member = members[index];
 
-          return Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 8,
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 8,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE5EAF0),
             ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFE5EAF0),
+          ),
+          child: Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Container(
+                height: 38,
+                width: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0EEFF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: Color(0xFF6C63FF),
+                  size: 21,
+                ),
               ),
-            ),
-            child: Row(
-              textDirection: TextDirection.rtl,
-              children: [
-                Container(
-                  height: 38,
-                  width: 38,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0EEFF),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.person_rounded,
-                    color: Color(0xFF6C63FF),
-                    size: 21,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  member,
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.vazirmatn(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF263238),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    member,
-                    textDirection: TextDirection.rtl,
-                    textAlign: TextAlign.right,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.vazirmatn(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF263238),
-                    ),
-                  ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'حذف عضو',
+                onPressed: () => removeMember(index),
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Color(0xFFE74C3C),
+                  size: 23,
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  tooltip: 'حذف عضو',
-                  onPressed: () => removeMember(index),
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    color: Color(0xFFE74C3C),
-                    size: 23,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth =
-        MediaQuery.of(context).size.width;
+    final double screenWidth = MediaQuery.of(context).size.width;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -536,7 +585,7 @@ class _ClassManagementScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _label('نام صنف :'),
+                _label('نام صنف :', required: true),
                 const SizedBox(height: 8),
                 _textField(
                   controller: classNameController,
@@ -545,7 +594,7 @@ class _ClassManagementScreenState
                 ),
                 const SizedBox(height: 17),
 
-                _label('نام استاد :'),
+                _label('نام استاد :', required: true),
                 const SizedBox(height: 8),
                 _textField(
                   controller: teacherController,
@@ -573,8 +622,7 @@ class _ClassManagementScreenState
                     onPressed: isSaving ? null : saveClass,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6C63FF),
-                      disabledBackgroundColor:
-                          const Color(0xFF9E98F5),
+                      disabledBackgroundColor: const Color(0xFF9E98F5),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
@@ -584,21 +632,21 @@ class _ClassManagementScreenState
                       mainAxisAlignment: MainAxisAlignment.center,
                       textDirection: TextDirection.ltr,
                       children: [
+                        
+                     
+                        const Icon(
+                          Icons.save_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                           const SizedBox(width: 20),
                         Text(
-                          isSaving
-                              ? 'در حال ذخیره...'
-                              : 'ذخیره صنف',
+                          isSaving ? 'در حال ذخیره...' : 'ذخیره صنف',
                           style: GoogleFonts.vazirmatn(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                             color: Colors.white,
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Icon(
-                          Icons.save_rounded,
-                          color: Colors.white,
-                          size: 22,
                         ),
                       ],
                     ),
@@ -609,6 +657,38 @@ class _ClassManagementScreenState
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Automatically format time: 1220 -> 12:20
+class TimeInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String digits = newValue.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+
+    if (digits.length > 4) {
+      digits = digits.substring(0, 4);
+    }
+
+    String formatted = digits;
+
+    if (digits.length > 2) {
+      formatted =
+          '${digits.substring(0, 2)}:${digits.substring(2)}';
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: formatted.length,
       ),
     );
   }

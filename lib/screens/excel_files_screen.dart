@@ -510,10 +510,10 @@ class _ExcelFilesScreenState extends State<ExcelFilesScreen> {
         borderRadius: BorderRadius.circular(18),
         child: Ink(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(color: excelGreen.withValues(alpha: 0.15)),
             boxShadow: [
               BoxShadow(

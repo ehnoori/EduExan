@@ -1134,12 +1134,19 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(
-          backgroundColor: backgroundColor,
-          elevation: 0,
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: navyColor),
-        ),
+      appBar: AppBar(
+  backgroundColor: backgroundColor,
+  elevation: 0,
+  centerTitle: true,
+  leading: IconButton(
+    onPressed: () => Navigator.pop(context),
+    icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF263238),
+              size: 20,
+            ),
+  ),
+),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 25),
@@ -1153,12 +1160,12 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
                   decoration: cardDecoration,
                   child: Column(
                     children: [
-                      Image.asset(
-                        'assets/images/a_clean_modern_high_resolution_vector_3d_style_e.png',
-                        height: 115,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 12),
+                      // Image.asset(
+                      //   'assets/images/a_clean_modern_high_resolution_vector_3d_style_e.png',
+                      //   height: 115,
+                      //   fit: BoxFit.contain,
+                      // ),
+                      // const SizedBox(height: 12),
                       Text(
                         'وارد کردن سوالات امتحان',
                         style: titleStyle,
