@@ -10,7 +10,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.0.0-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.13.2-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green)](https://github.com/ehnoori/EduExan)
-[![Version](https://img.shields.io/badge/Version-3.1.0-blue)](https://github.com/ehnoori/EduExan)
+[![Version](https://img.shields.io/badge/Version-3.0-blue)](https://github.com/ehnoori/EduExan)
 
 [**GitHub Repository**](https://github.com/ehnoori/EduExan) · [**Report an Issue**](https://github.com/ehnoori/EduExan/issues)
 
@@ -32,9 +32,9 @@ EduExan uses a local database to preserve application data and provides a struct
 
 <div align="center">
 
-| Android | Application Graphics | iOS |
-|:---:|:---:|:---:|
-| ![Android](screenshots/android.png) | ![Application Graphics](screenshots/graphic.png) | ![iOS](screenshots/ios.png) |
+| Class Management | Class Details | Question Types | Excel Import Guide |
+|:---:|:---:|:---:|:---:|
+| <img src="assets/images/photo_6332379857605563985_y.jpg" alt="Class management screen" width="180"> | <img src="assets/images/photo_6332379857605563984_y.jpg" alt="Class details screen" width="180"> | <img src="assets/images/photo_6332379857605563983_x.jpg" alt="Supported question types" width="180"> | <img src="assets/images/photo_6332379857605563982_x.jpg" alt="Excel import guide" width="180"> |
 
 </div>
 
@@ -214,11 +214,12 @@ EduExan/
 │   └── ...
 │
 ├── assets/
-│
-├── screenshots/
-│   ├── android.png
-│   ├── graphic.png
-│   └── ios.png
+│   ├── images/
+│   │   ├── photo_6332379857605563982_x.jpg
+│   │   ├── photo_6332379857605563983_x.jpg
+│   │   ├── photo_6332379857605563984_y.jpg
+│   │   └── photo_6332379857605563985_y.jpg
+│   └── ...
 │
 ├── test/
 │

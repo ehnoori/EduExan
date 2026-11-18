@@ -1,7 +1,7 @@
 name: eduexam
 description: "Class Evaluation App"
 publish_to: 'none'
-version: 3.0.0+5
+version: 3.2.1
 
 environment:
   sdk: ^3.13.2

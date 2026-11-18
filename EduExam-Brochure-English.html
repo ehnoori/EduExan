@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EduExam Android Brochure - Two A4 Pages</title>
+  <style>
+    :root {
+      --blue: #2864f0;
+      --deep-blue: #1d4ed8;
+      --navy: #172b5b;
+      --purple: #6a52d8;
+      --green: #238a58;
+      --orange: #e8872c;
+      --ink: #26354d;
+      --muted: #64748b;
+      --line: #dce5f2;
+      --pale: #f3f7fd;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      color: var(--ink);
+      background: #e9eef6;
+      font-family: "Vazirmatn", "Noto Naskh Arabic", Tahoma, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .sheet {
+      width: 297mm;
+      height: 210mm;
+      margin: 12mm auto;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      direction: ltr;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 5mm 18mm #142a4a24;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .sheet:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      padding: 8mm 7mm 6mm;
+      display: flex;
+      flex-direction: column;
+      gap: 3mm;
+      overflow: hidden;
+      direction: rtl;
+    }
+
+    .panel + .panel { border-left: 1px solid var(--line); }
+    .cover { color: white; background: linear-gradient(155deg, #3977fa, #2864f0 62%, #1748c8); }
+    .soft { background: #f3f7ff; }
+    .white { background: white; }
+
+    .institution-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2mm;
+      padding-bottom: 2mm;
+      border-bottom: .3mm solid #ffffff70;
+    }
+
+    .institution {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      padding: 1.5mm;
+      border: .3mm solid #ffffff75;
+      border-radius: 2.5mm;
+      background: #ffffff12;
+    }
+
+    .institution img {
+      flex: 0 0 12mm;
+      width: 12mm;
+      height: 12mm;
+      padding: .5mm;
+      object-fit: contain;
+      border-radius: 50%;
+      background: white;
+    }
+
+    .institution span {
+      color: white;
+      font-size: 7.6pt;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 2.5mm;
+      margin-bottom: 1mm;
+      direction: ltr;
+      justify-content: flex-end;
+    }
+
+    .brand-icon {
+      width: 12mm;
+      height: 12mm;
+      padding: .5mm;
+      object-fit: contain;
+      border: .4mm solid #ffffffa8;
+      border-radius: 3mm;
+      background: white;
+    }
+
+    .brand-name {
+      font: 800 17pt/1 Arial, sans-serif;
+      letter-spacing: -.3px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--blue);
+      font-size: 8.5pt;
+      font-weight: 800;
+    }
+
+    .cover .eyebrow { color: #e3edff; }
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      color: white;
+      font-size: 22pt;
+      line-height: 1.5;
+      font-weight: 800;
+    }
+
+    h2 {
+      color: var(--blue);
+      font-size: 17pt;
+      line-height: 1.45;
+      font-weight: 800;
+    }
+
+    h3 {
+      color: var(--navy);
+      font-size: 11pt;
+      line-height: 1.45;
+      font-weight: 800;
+    }
+
+    p, li { font-size: 9pt; line-height: 1.75; }
+    .cover p { color: #e8f0ff; }
+    .muted { color: var(--muted); }
+
+    .hero-image {
+      min-height: 0;
+      flex: 1;
+      padding: 2mm;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: .5mm solid #ffffffa8;
+      border-radius: 4mm;
+      background: #f5f7fb;
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      object-fit: contain;
+    }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 1.5mm; }
+
+    .tag {
+      padding: 1mm 2.3mm;
+      border: .3mm solid #ffffff8c;
+      border-radius: 10mm;
+      color: white;
+      background: #ffffff19;
+      font-size: 7.3pt;
+      font-weight: 700;
+    }
+
+    .cover-footer {
+      padding-top: 2mm;
+      border-top: .3mm solid #ffffff70;
+      color: #e3edff;
+      direction: ltr;
+      text-align: center;
+      font: 7pt Arial, sans-serif;
+    }
+
+    .subheading {
+      padding-bottom: 2mm;
+      border-bottom: .35mm solid var(--line);
+    }
+
+    .subheading p {
+      margin-top: 1mm;
+      color: var(--muted);
+      font-size: 8.2pt;
+    }
+
+    .benefit-card {
+      padding: 3mm;
+      border: .3mm solid #dce6f6;
+      border-radius: 3mm;
+      background: white;
+    }
+
+    .benefit-card h3 { margin-bottom: 1mm; }
+    .benefit-card p { color: var(--muted); }
+
+    .mini-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 7mm;
+      height: 7mm;
+      margin-left: 1mm;
+      border-radius: 2mm;
+      color: var(--blue);
+      background: #eaf1ff;
+      font: 800 8pt Arial, sans-serif;
+      vertical-align: middle;
+    }
+
+    .screenshot-frame {
+      min-height: 0;
+      flex: 1;
+      padding: 2mm;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: .35mm solid var(--line);
+      border-radius: 3mm;
+      background: white;
+    }
+
+    .screenshot-frame img {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      object-fit: contain;
+    }
+
+    .step-list {
+      display: grid;
+      gap: 3mm;
+      margin-top: 1mm;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 8mm 1fr;
+      gap: 2mm;
+      align-items: start;
+    }
+
+    .step-number {
+      width: 7mm;
+      height: 7mm;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--blue);
+      font-size: 9pt;
+      font-weight: 800;
+    }
+
+    .step h3 { margin-bottom: .5mm; }
+    .step p { color: var(--muted); }
+
+    .note-card {
+      padding: 3mm;
+      border: .35mm solid #cfddfb;
+      border-radius: 3mm;
+      background: #f5f8ff;
+    }
+
+    .note-card h3 { color: var(--blue); margin-bottom: 1mm; }
+    .note-card p { color: var(--muted); }
+
+    .feature-list {
+      display: grid;
+      gap: 2.3mm;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-right: 5mm;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      position: absolute;
+      right: 0;
+      top: 0;
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .excel-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      direction: ltr;
+      text-align: left;
+      background: white;
+    }
+
+    .excel-table th, .excel-table td {
+      padding: 1.2mm;
+      border: .25mm solid #dbe4f0;
+      overflow-wrap: anywhere;
+      font: 6.6pt Arial, sans-serif;
+    }
+
+    .excel-table th {
+      color: white;
+      background: #244778;
+      font-size: 6pt;
+    }
+
+    .excel-table td { color: #3e4b60; }
+
+    .type-list { display: grid; gap: 1.5mm; }
+
+    .type-row {
+      display: grid;
+      grid-template-columns: 17mm 1fr;
+      gap: 2mm;
+      padding: 1.8mm 2mm;
+      border-radius: 2mm;
+      background: white;
+    }
+
+    .type-row code {
+      color: var(--blue);
+      direction: ltr;
+      text-align: left;
+      font: 700 8pt Arial, sans-serif;
+    }
+
+    .type-row strong { color: var(--navy); font-size: 8pt; }
+    .type-row span { color: var(--muted); font-size: 7.3pt; line-height: 1.5; }
+
+    .warning {
+      padding: 2.5mm;
+      border-right: 1mm solid var(--orange);
+      border-radius: 2mm;
+      color: #68471a;
+      background: #fff7e8;
+      font-size: 7.4pt;
+      line-height: 1.55;
+    }
+
+    .warning-title {
+      display: block;
+      margin-bottom: 1mm;
+      color: #68471a;
+      font-size: 8pt;
+    }
+
+    .warning-list {
+      display: grid;
+      gap: .7mm;
+      margin: 0;
+      padding: 0 4mm 0 0;
+    }
+
+    .screen-grid {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 3mm;
+    }
+
+    figure {
+      min-width: 0;
+      min-height: 0;
+      margin: 0;
+      padding: 2mm;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 1mm;
+      overflow: hidden;
+      border: .3mm solid var(--line);
+      border-radius: 2.5mm;
+      background: #f8fafd;
+    }
+
+    figure img {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      object-fit: contain;
+      background: white;
+    }
+
+    figcaption {
+      color: var(--navy);
+      font-size: 7.3pt;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .snapshot {
+      padding: 3mm;
+      border-right: 1mm solid var(--purple);
+      border-radius: 2.5mm;
+      color: #49378a;
+      background: #f6f3ff;
+      font-size: 8pt;
+      line-height: 1.7;
+    }
+
+    .page-footer {
+      margin-top: auto;
+      padding-top: 1.5mm;
+      border-top: .3mm solid var(--line);
+      color: var(--muted);
+      font-size: 7pt;
+      text-align: center;
+    }
+
+    .cover .page-footer {
+      border-color: #ffffff70;
+      color: #e3edff;
+      direction: ltr;
+      font-family: Arial, sans-serif;
+    }
+
+    @page { size: A4 landscape; margin: 0; }
+
+    @media print {
+      html, body { width: 297mm; background: white; }
+      .sheet { margin: 0; box-shadow: none; }
+    }
+
+    @media screen and (max-width: 850px) {
+      .sheet {
+        width: 100%;
+        height: auto;
+        margin: 0 auto 12px;
+        grid-template-columns: 1fr;
+      }
+
+      .panel { min-height: 700px; }
+      .panel + .panel { border-left: 0; border-top: 1px solid var(--line); }
+      .hero-image, .screenshot-frame { min-height: 320px; }
+      .screen-grid { min-height: 520px; }
+    }
+  
+    .panel { direction: ltr; }
+    .feature-list li { padding-right: 0; padding-left: 5mm; }
+    .feature-list li::before { right: auto; left: 0; }
+    .warning { border-right: 0; border-left: 1mm solid var(--orange); }
+    .snapshot { border-right: 0; border-left: 1mm solid var(--purple); }
+</style>
+</head>
+<body>
+  <main>
+    <section class="sheet" aria-label="First brochure page">
+      <article class="panel cover">
+        <div class="institution-row" aria-label="University logos">
+          <div class="institution">
+            <img src="assets/images/university.png" alt="Herat University logo">
+            <span>Herat University</span>
+          </div>
+          <div class="institution">
+            <img src="assets/images/CS.png" alt="Department of Computer Science logo">
+            <span>Department of Computer Science</span>
+          </div>
+        </div>
+        <div class="brand">
+          <span class="brand-name">EduExam</span>
+          <img class="brand-icon" src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="Application icon">
+        </div>
+        <p class="eyebrow">Android app · Class and student evaluation management</p>
+        <h1>Organized Exams, Better Management</h1>
+        <p>Organize questions, evaluate students, and export Excel results to save time.</p>
+        <div class="tags">
+          <span class="tag">Class Management</span>
+          <span class="tag">Excel Questionnaires</span>
+          <span class="tag">Student Evaluation</span>
+          <span class="tag">Excel Export</span>
+        </div>
+        <div class="hero-image">
+          <img src="assets/images/photo_6332379857605563985_y.jpg" alt="EduExam home screen">
+        </div>
+        <p class="muted">Manage questions, evaluations, and results in one application.</p>
+        <div class="page-footer">github.com/ehnoori/EduExan</div>
+      </article>
+
+      <article class="panel soft">
+        <div class="subheading">
+          <h2>Organized exams, no wasted time</h2>
+          <p>For class, midterm, and final exams. Record answers and track results, including 20-percent evaluations.</p>
+        </div>
+        <div class="benefit-card">
+          <h3><span class="mini-icon">01</span>Create a class</h3>
+          <p>Enter the class and teacher name; schedule is optional. Add students to the roster.</p>
+        </div>
+        <div class="benefit-card">
+          <h3><span class="mini-icon">02</span>Prepare questions</h3>
+          <p>Import an Excel file, preview questions, and activate your preferred questionnaire set.</p>
+        </div>
+        <div class="benefit-card">
+          <h3><span class="mini-icon">03</span>Record evaluation</h3>
+          <p>Select a student and record answers. Duplicate evaluation of the same student is prevented.</p>
+        </div>
+        <div class="benefit-card">
+          <h3><span class="mini-icon">04</span>Track results</h3>
+          <p>View student status and export class results to Excel. Less repetitive work and easier exam management.</p>
+        </div>
+        <div class="page-footer">Create class · Add teacher · Add students</div>
+      </article>
+
+      <article class="panel white">
+        <div class="subheading">
+          <h2>Start in 3 steps</h2>
+          <p>Quick setup for your first evaluation</p>
+        </div>
+        <div class="step-list">
+          <div class="step">
+            <span class="step-number">۱</span>
+            <div><h3>Class and students</h3><p>Create a class and complete the student list.</p></div>
+          </div>
+          <div class="step">
+            <span class="step-number">۲</span>
+            <div><h3>Question file</h3><p>Select an .xlsx file, preview it, and activate the questionnaire set.</p></div>
+          </div>
+          <div class="step">
+            <span class="step-number">۳</span>
+            <div><h3>Evaluation and results</h3><p>Select a student, answer questions, and receive the result in Excel.</p></div>
+          </div>
+        </div>
+        <div class="note-card">
+          <h3>What do you need to start?</h3>
+          <ul class="feature-list">
+            <li>EduExam app on an Android phone or tablet</li>
+            <li>Question file با فرمت ‎.xlsx</li>
+            <li>Class name, teacher name, and student list</li>
+          </ul>
+        </div>
+        <div class="screenshot-frame">
+          <img src="assets/images/photo_6332379857605563982_x.jpg" alt="Question import guide">
+        </div>
+        <div class="page-footer">Review questions before activation</div>
+      </article>
+    </section>
+
+    <section class="sheet" aria-label="Second brochure page">
+      <article class="panel soft">
+        <div class="subheading">
+          <h2>Prepare the questionnaire correctly</h2>
+          <p>Excel template · first sheet · one question per row</p>
+        </div>
+        <table class="excel-table" aria-label="Question file headers">
+          <thead>
+            <tr>
+              <th>Question</th><th>Type</th><th>Option A</th><th>Option B</th>
+              <th>Option C</th><th>Option D</th><th>CorrectAnswer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Question text</td><td>choice</td><td>کابل</td><td>هرات</td>
+              <td>—</td><td>—</td><td>A</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>Four supported question types</h3>
+        <div class="type-list">
+          <div class="type-row"><code>choice</code><span><strong>Multiple choice:</strong> Write options in the Option columns; at least two options.</span></div>
+          <div class="type-row"><code>number</code><span><strong>Number:</strong> پاسخ Number نمونه را ثبت کنید.</span></div>
+          <div class="type-row"><code>text</code><span><strong>Text:</strong> Enter a sample answer in the file.</span></div>
+          <div class="type-row"><code>project</code><span><strong>Project:</strong> پاسخ بلی/خیر و نام Project.</span></div>
+        </div>
+        <div class="warning">
+          <strong class="warning-title">Important notes</strong>
+          <ul class="warning-list">
+            <li>Complete the Question and CorrectAnswer columns.</li>
+            <li>In the Type column, enter one of the four supported types.</li>
+            <li>For Multiple choice questions, specify the correct answer with an option letter such as A.</li>
+            <li>If the Type column is empty, the question is treated as Text.</li>
+          </ul>
+        </div>
+        <div class="screenshot-frame">
+          <img src="assets/images/photo_6332379857605563983_x.jpg" alt="View of four supported question types in EduExam">
+        </div>
+      </article>
+
+      <article class="panel white">
+        <div class="subheading">
+          <h2>All features at a glance</h2>
+          <p>Designed to organize class evaluation</p>
+        </div>
+        <div class="benefit-card">
+          <h3>Class and student management</h3>
+          <ul class="feature-list">
+            <li>Create, edit, and delete classes</li>
+            <li>Record the teacher name and optional schedule</li>
+            <li>Add and manage the student roster</li>
+            <li>Prevent duplicate names within a class</li>
+          </ul>
+        </div>
+        <div class="benefit-card">
+          <h3>Questionnaire management</h3>
+          <ul class="feature-list">
+            <li>Import Excel files and preview questions</li>
+            <li>Store multiple questionnaires and activate a preferred set</li>
+            <li>Manage and delete question files</li>
+          </ul>
+        </div>
+        <div class="benefit-card">
+          <h3>Evaluation and results</h3>
+          <ul class="feature-list">
+            <li>Select a student and record answers</li>
+            <li>پیگیری وضعیت Student Evaluationان</li>
+            <li>Create, open, and share result Excel files</li>
+          </ul>
+        </div>
+        <div class="snapshot">
+          <strong>Preserve history:</strong> Used questions are saved with evaluations. Changing questionnaire sets does not alter previous results. Each student can be evaluated only once in a class.
+        </div>
+        <div class="note-card">
+          <h3>Local storage</h3>
+          <p>Class, question, and evaluation data is stored on the device.</p>
+        </div>
+      </article>
+
+      <article class="panel soft">
+        <div class="subheading">
+          <h2>View app screens</h2>
+          <p>A real view of the EduExam experience</p>
+        </div>
+        <div class="screen-grid">
+          <figure>
+            <img src="assets/images/photo_6332379857605563985_y.jpg" alt="Home screen EduExam">
+            <figcaption>Home screen</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/images/photo_6332379857605563984_y.jpg" alt="Class details">
+            <figcaption>Create class and student</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/images/photo_6332379857605563982_x.jpg" alt="Question import tips">
+            <figcaption>Question import tips</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/images/photo_6332379857605563983_x.jpg" alt="Question types">
+            <figcaption>Question types</figcaption>
+          </figure>
+        </div>
+        <div class="snapshot">
+          <strong>Reminder:</strong> The correct or sample answer is stored in the question file; the app does not grade automatically.
+        </div>
+        <div class="page-footer">EduExam · Better exam management</div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../database/isar_service.dart';
 import '../models/question_model.dart';
+import '../services/question_import_parser.dart';
 
 class QuestionBank {
   final String id;
@@ -296,72 +297,7 @@ class _ImportQuestionsScreenState extends State<ImportQuestionsScreen> {
   // PARSE QUESTIONS
 
   List<QuestionModel> parseQuestions(List<List<String>> rows) {
-    if (rows.length < 2) {
-      throw Exception('فایل باید عنوان ستون‌ها و حداقل یک سوال داشته باشد.');
-    }
-
-    final headers = rows.first.map(normalizeHeader).toList();
-
-    final questionIndex = headers.indexWhere(
-      (header) => ['question', 'سوال', 'سؤال'].contains(header),
-    );
-
-    final correctIndex = headers.indexWhere(
-      (header) => [
-        'correct answer',
-        'correctanswer',
-        'پاسخ درست',
-        'پاسخ صحیح',
-      ].contains(header),
-    );
-
-    if (questionIndex == -1) {
-      throw Exception('ستون Question یا سوال پیدا نشد.');
-    }
-
-    if (correctIndex == -1) {
-      throw Exception('ستون CorrectAnswer یا پاسخ درست پیدا نشد.');
-    }
-
-    String getCell(List<String> row, int index) {
-      if (index < 0 || index >= row.length) return '';
-      return row[index].trim();
-    }
-
-    final importedQuestions = <QuestionModel>[];
-
-    for (int i = 1; i < rows.length; i++) {
-      final row = rows[i];
-
-      final questionText = getCell(row, questionIndex);
-      final correctAnswer = getCell(row, correctIndex);
-
-      if (questionText.isEmpty && correctAnswer.isEmpty) {
-        continue;
-      }
-
-      if (questionText.isEmpty) {
-        throw Exception('متن سوال در ردیف ${i + 1} خالی است.');
-      }
-
-      if (correctAnswer.isEmpty) {
-        throw Exception('پاسخ سوال در ردیف ${i + 1} خالی است.');
-      }
-
-      final question = QuestionModel()
-        ..question = questionText
-        ..type = 'text'
-        ..options = []
-        ..correctAnswer = correctAnswer;
-
-      importedQuestions.add(question);
-    }
-
-    if (importedQuestions.isEmpty) {
-      throw Exception('هیچ سوال معتبری پیدا نشد.');
-    }
-
-    return importedQuestions;
+    return parseQuestionRows(rows);
   }
 
   // IMPORT EXCEL FILE

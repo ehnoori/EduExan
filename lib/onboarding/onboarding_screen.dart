@@ -146,19 +146,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               // AppBar
               _buildHeader(),
 
-              // صفحات معرفی
+              // صفحات معرفی - حرکت از راست به چپ
               Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: pages.length,
-                  onPageChanged: (index) {
-                    setState(() {
-                      currentPage = index;
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    return _buildPage(pages[index]);
-                  },
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: pages.length,
+                    onPageChanged: (index) {
+                      setState(() {
+                        currentPage = index;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      return _buildPage(pages[index]);
+                    },
+                  ),
                 ),
               ),
 
@@ -377,8 +380,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: Column(
         children: [
-    // const SizedBox(height: 18),
-
           // دکمه چپ، نقاط وسط و دکمه راست
           Directionality(
             textDirection: TextDirection.ltr,
