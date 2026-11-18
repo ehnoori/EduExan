@@ -1,16 +1,18 @@
  
 <div align="center">
 
+<img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="EduExan app icon" width="120">
+
 # 🎓 EduExan
 
 ### Class Management & Student Evaluation System
 
-**A Flutter application for managing classes, students, questionnaires, and student evaluations.**
+**EduExan is an Android app for class administration, Excel-based questionnaires, and recording student evaluations.**
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.0.0-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.13.2-0175C2?logo=dart&logoColor=white)](https://dart.dev)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green)](https://github.com/ehnoori/EduExan)
-[![Version](https://img.shields.io/badge/Version-3.0-blue)](https://github.com/ehnoori/EduExan)
+[![Flutter](https://img.shields.io/badge/Flutter-app-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.13%2B-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android-green)](https://github.com/ehnoori/EduExan)
+[![Version](https://img.shields.io/badge/Version-3.2.1-blue)](https://github.com/ehnoori/EduExan)
 
 [**GitHub Repository**](https://github.com/ehnoori/EduExan) · [**Report an Issue**](https://github.com/ehnoori/EduExan/issues)
 
@@ -18,15 +20,30 @@
 
 ---
 
-## 📖 Overview
+## Contents
 
-**EduExan** is a Flutter-based class management and student evaluation system designed to simplify classroom administration and academic assessment.
+- [Overview](#overview)
+- [Screenshots](#screenshots)
+- [English Brochure](#english-brochure)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+- [Question File Format](#question-file-format)
+- [Evaluation Workflow](#evaluation-workflow)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Developer](#developer)
+- [License](#license)
 
-The application provides tools for creating classes, managing students, importing questionnaires from Excel files, conducting structured student evaluations, and storing evaluation results.
+---
 
-EduExan uses a local database to preserve application data and provides a structured evaluation workflow that helps maintain consistency across student assessments.
+## Overview
 
-## 📸 Screenshots
+**EduExan** is a Flutter-based class management and student evaluation application. It helps teachers organize class rosters, prepare questionnaires from Excel files, record student answers, and export class results.
+
+Application data is stored locally on the device. The current supported and documented target is Android; other platforms have not been verified.
+
+## Screenshots
 
 ### Application Preview
 
@@ -38,119 +55,85 @@ EduExan uses a local database to preserve application data and provides a struct
 
 </div>
 
+## English Brochure
+
+The English brochure provides an overview of the app, its workflow, supported question types, and screenshots:
+
+- [View the English brochure (HTML)](./EduExam-Brochure-English.html)
+- [Download the English brochure (PDF)](./EduExam-Brochure-English.pdf)
+
 ---
 
-## ✨ Key Features
+## Features
 
-### 🏫 Class Management
-- Create new classes.
-- View and manage existing classes.
-- Organize evaluation activities by class.
-- Keep evaluation records associated with their classes.
+### Class Management
+- Create, view, edit, and delete classes.
+- Record the class name and teacher; optionally add a start and end time.
+- Add and remove students from each class.
+- Prevent duplicate student names within the same class.
 
-### 👨‍🎓 Student Management
-- Manage students within classes.
-- Select students for evaluation.
-- Organize student evaluation records.
+### Student Management
+- View a class roster and select a student to evaluate.
+- See which students are complete and which are still awaiting evaluation.
+- Prevent a student from being evaluated more than once in a class.
+
+### Questionnaire Management
+- Import and keep multiple `.xlsx` question files on the device.
+- Preview a question file before activating it.
+- Choose which saved question file is used for new evaluations.
+- Review the question count and delete saved question files.
+- Read questions from the workbook's first worksheet.
+
+### Supported Question Types
+- `choice` — multiple-choice questions with at least two options.
+- `number` — numeric answers.
+- `text` — written answers.
+- `project` — yes/no answers; choosing yes requires a project name.
+
+### Student Evaluation
+- Display one question at a time and allow moving between questions.
+- Require an answer to every question before saving an evaluation.
+- Save each evaluation with its answers, date, and a snapshot of the questions used.
+- Keep previously saved evaluations unchanged when the active question file changes.
+- Record responses; the app does not automatically grade answers.
 - Prevent duplicate evaluations for the same student in a class.
 
-### 📝 Student Evaluation
-- Evaluate students using structured questionnaires.
-- Display questions and their available answer options.
-- Support different question types.
-- Save completed evaluations.
-- Retrieve and review previously saved results.
+### Results and Excel Files
+- Generate a formatted Excel results workbook for a class after evaluations are recorded.
+- Include class summary details, evaluation counts, date, student names, and recorded answers.
+- Open, share, and delete generated Excel results from the app.
 
-### 📊 Excel Question Import
-- Import questionnaire files in `.xlsx` format.
-- Support Persian question and column headers.
-- Read multiple-choice questions and their options.
-- Support question types:
-  - `choice`
-  - `number`
-  - `text`
-  - `project`
-- Preview imported questions before saving.
-- Manage imported questionnaire files.
-- Store selected Excel files in application storage.
-
-### 📚 Question Management
-- Manage questionnaire files.
-- View the number of questions in each file.
-- Select an active questionnaire file.
-- Preview imported questions.
-- Delete unwanted questionnaire files.
-- Maintain the currently selected question set.
-
-### 🔒 Question Snapshot System
-- Save a snapshot of the questions when the first evaluation in a class is submitted.
-- Use the same question set for subsequent students in that class.
-- Keep historical evaluation records independent of later question imports.
-- Help ensure consistent assessment across students.
-
-### 💾 Local Database
-- Store classes and student information.
-- Store questions and evaluation records.
-- Preserve data locally using Isar.
-- Retrieve previously saved records.
-- Keep question snapshots associated with evaluation records.
-
-### 📁 File Management
-- Select Excel files from the device.
-- Store imported files in application storage.
-- Manage saved questionnaire files.
-- Support file-related workflows implemented in the application.
-
-### 🌐 User Interface
-- Flutter-based user interface.
-- Persian typography using Google Fonts.
-- Support for Persian-language content.
-- Organized screens for class management and student evaluation.
+### Local Data and Interface
+- Store classes, students, questions, and evaluations locally using Isar.
+- Store imported questionnaire files and result workbooks in app document storage.
+- Provide a Persian-language interface with Google Fonts typography.
+- Include an in-app question-import guide and a sample Excel workbook viewer.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Technology | Purpose |
 |---|---|
-| Flutter | Cross-platform application development |
-| Dart | Main programming language |
-| Isar Database | Local data persistence |
-| Excel Plus | Excel file reading and processing |
-| File Picker | Selecting files from the device |
-| Path Provider | Application storage directories |
-| Shared Preferences | Saving application settings |
-| Google Fonts | Typography |
-| Share Plus | Sharing content |
-| Syncfusion PDF | PDF functionality |
+| Flutter | Application framework |
+| Dart | Programming language |
+| Isar | Local database |
+| Excel Plus | Reading and writing Excel workbooks |
+| File Picker | Selecting questionnaire files |
+| Path Provider | Application document storage |
+| Shared Preferences | Onboarding state |
+| Open Filex | Opening exported Excel files |
+| Share Plus | Sharing exported files |
+| Google Fonts | User-interface typography |
+| Universal Document Viewer | Displaying the sample spreadsheet |
 
 ---
 
-## 📱 Supported Platforms
-
-| Platform | Status |
-|---|---|
-| Android | Primary target |
-| iOS | Flutter project platform |
-| Windows | Flutter project platform |
-| Linux | Flutter project platform |
-| macOS | Flutter project platform |
-| Web | Flutter project platform |
-
-*Platform availability depends on the implementation and testing of individual features.*
-
----
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-Make sure you have installed:
-
-- Flutter SDK
-- Dart SDK
-- Android Studio or Visual Studio Code
-- An Android emulator or physical device
+Install the Flutter SDK and Android Studio (or another Flutter-compatible IDE), and set up an Android emulator or device.
 
 ### 1. Clone the Repository
 
@@ -184,45 +167,52 @@ flutter analyze
 
 ---
 
-## 🧱 Project Structure
+## Question File Format
 
-The project follows a modular Flutter structure, separating screens, database services, models, and application resources.
+Import an `.xlsx` workbook with one question per row on the first worksheet. Each row must include a question and a correct or sample answer. Type and option columns depend on the question.
+
+| Column | Required | Description |
+|---|:---:|---|
+| `Question` | Yes | Question text; Persian/Dari header aliases are supported. |
+| `Type` | No | `choice`, `number`, `text`, or `project`. If blank, the question is treated as `text`. |
+| `Option A` – `Option D` | For `choice` | At least two non-empty answer options are required. |
+| `CorrectAnswer` | Yes | Correct or sample answer. For a choice question, use an option label such as `A`. |
+
+Persian/Dari aliases are supported for the question, type, option, and answer headers. A sample workbook is available at [`assets/files/eduexam_sample_questions.xlsx`](./assets/files/eduexam_sample_questions.xlsx).
+
+---
+
+## Project Structure
+
+The project separates app screens, Isar models and database access, and supporting services.
 
 ```text
 EduExan/
 │
 ├── android/
-├── ios/
-├── linux/
-├── macos/
-├── windows/
-├── web/
-│
 ├── lib/
 │   ├── database/
 │   │   └── isar_service.dart
-│   │
 │   ├── models/
 │   │   ├── class_model.dart
-│   │   ├── question_model.dart
-│   │   └── evaluation_model.dart
-│   │
+│   │   ├── evaluation_model.dart
+│   │   └── question_model.dart
 │   ├── screens/
-│   │
-│   ├── widgets/
-│   │
-│   └── ...
-│
+│   │   ├── class_list_screen.dart
+│   │   ├── class_management_screen.dart
+│   │   ├── evaluation_screen.dart
+│   │   ├── excel_files_screen.dart
+│   │   ├── home_screen.dart
+│   │   ├── import_questions_screen.dart
+│   │   └── student_selection_screen.dart
+│   ├── services/
+│   │   ├── excel_export_service.dart
+│   │   └── question_import_parser.dart
+│   └── main.dart
 ├── assets/
-│   ├── images/
-│   │   ├── photo_6332379857605563982_x.jpg
-│   │   ├── photo_6332379857605563983_x.jpg
-│   │   ├── photo_6332379857605563984_y.jpg
-│   │   └── photo_6332379857605563985_y.jpg
-│   └── ...
-│
+│   ├── files/
+│   └── images/
 ├── test/
-│
 ├── pubspec.yaml
 ├── pubspec.lock
 └── README.md
@@ -230,96 +220,20 @@ EduExan/
 
 ---
 
-## 📚 Evaluation Workflow
+## Evaluation Workflow
 
-EduExan follows a structured evaluation process:
+1. Create a class and add its teacher and students.
+2. Import an Excel questionnaire, preview it, and activate it.
+3. Select a class and an unevaluated student.
+4. Answer each question and save the evaluation.
+5. Review the student's evaluation status and export the class results to Excel.
+6. Open or share the generated workbook from the results screen.
 
-1. Create a class.
-2. Manage students in the class.
-3. Import questions from an Excel file.
-4. Preview and review imported questions.
-5. Select the questionnaire for evaluation.
-6. Select a class and a student.
-7. Complete the evaluation questionnaire.
-8. Save the evaluation result.
-9. Review previously saved evaluations.
-
-### Question Snapshot System
-
-EduExan includes a question snapshot mechanism to maintain consistency during class evaluations.
-
-When the first student in a class is evaluated, the current question set is saved as a snapshot.
-
-Subsequent student evaluations in that class use the same snapshot, even if the active questionnaire is changed later.
-
-This helps ensure that students in the same class are evaluated using a consistent set of questions.
+Each evaluation saves its own question snapshot, preserving the question set used for that student. The active question file is used for each new evaluation; the app does not automatically lock one questionnaire for an entire class.
 
 ---
 
-## 📊 Excel Import Format
-
-EduExan supports Excel question files with columns such as:
-
-| Column | Description |
-|---|---|
-| سوال | Question text |
-| نوع سوال | Question type |
-| گزینه A | First option |
-| گزینه B | Second option |
-| گزینه C | Third option |
-| گزینه D | Fourth option |
-| پاسخ صحیح | Correct answer |
-
-### Supported Question Types
-
-- `choice` — Multiple-choice questions.
-- `number` — Numeric questions.
-- `text` — Text-based questions.
-- `project` — Project-based questions.
-
-The first worksheet is used for importing questions.
-
----
-
-## 🔐 Data Persistence
-
-EduExan uses Isar Database to store application data locally.
-
-The application maintains data for:
-
-- Classes
-- Students
-- Questions
-- Questionnaire files
-- Student evaluations
-- Question snapshots
-
-Importing a new questionnaire does not intentionally replace historical evaluation snapshots.
-
-This helps preserve previously saved evaluation records.
-
----
-
-## 🗺️ Roadmap
-
-- [x] Class management foundation
-- [x] Student evaluation workflow
-- [x] Local database integration
-- [x] Excel question import
-- [x] Persian Excel header support
-- [x] Multiple question types
-- [x] Question preview
-- [x] Question snapshot support
-- [x] Questionnaire file management
-- [ ] Improve reporting and analytics
-- [ ] Expand PDF reporting features
-- [ ] Improve backup and restore workflows
-- [ ] Add additional data visualization features
-- [ ] Further improve UI and usability
-
----
-
-## 🧪 Testing
+## Testing
 
 Run the Flutter test suite:
 
@@ -335,7 +249,7 @@ flutter analyze
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions, suggestions, and bug reports are welcome.
 
@@ -347,20 +261,19 @@ Contributions, suggestions, and bug reports are welcome.
 
 ---
 
-## 👨‍💻 Author
+## Developer
 
 **Hamed Noori**
 
+- Flutter application developer
 - GitHub: [@ehnoori](https://github.com/ehnoori)
 - Project: [EduExan](https://github.com/ehnoori/EduExan)
 
 ---
 
-## 📄 License
+## License
 
-No license has been confirmed for this repository yet.
-
-Add a `LICENSE` file if you intend to publish the project under an open-source license.
+No license file is currently included in this repository. All rights are reserved unless a license is added.
 
 ---
 
