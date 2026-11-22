@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -56,7 +56,7 @@
       flex-direction: column;
       gap: 3mm;
       overflow: hidden;
-      direction: rtl;
+      direction: ltr;
     }
 
     .panel + .panel { border-left: 1px solid var(--line); }
@@ -67,6 +67,7 @@
     .institution-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      direction: ltr;
       gap: 2mm;
       padding-bottom: 2mm;
       border-bottom: .3mm solid #ffffff70;
@@ -75,6 +76,7 @@
     .institution {
       min-width: 0;
       display: flex;
+      direction: ltr;
       align-items: center;
       gap: 2mm;
       padding: 1.5mm;
